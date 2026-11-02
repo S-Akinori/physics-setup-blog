@@ -1,0 +1,164 @@
+---
+const {
+  apiBase,
+  slug,
+  type = "posts",
+} = Astro.props as {
+  apiBase: string;
+  slug: string;
+  type?: "posts" | "pages";
+};
+const endpoint = `${apiBase}/api/v1/${type}/${slug}/comments`;
+---
+
+<section class="comments" data-comments data-endpoint={endpoint}>
+  <h2>コメント</h2>
+  <div class="comment-list" aria-live="polite">
+    <p class="date">コメントを読み込んでいます。</p>
+  </div>
+  <form class="comment-form">
+    <div class="form-row">
+      <label>
+        お名前
+        <input name="authorName" required maxlength="80" />
+      </label>
+      <label>
+        メールアドレス
+        <input name="authorEmail" type="email" required maxlength="255" />
+      </label>
+    </div>
+    <label>
+      コメント
+      <textarea name="body" rows="6" required maxlength="5000"></textarea>
+    </label>
+    <input
+      class="honeypot"
+      name="company"
+      tabindex="-1"
+      autocomplete="off"
+      aria-hidden="true"
+    />
+    <button class="btn" type="submit">
+      コメントを送信
+    </button>
+    <p class="form-status" aria-live="polite"></p>
+  </form>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>("[data-comments]").forEach((root) => {
+    const endpoint = root.dataset.endpoint!;
+    const list = root.querySelector<HTMLElement>(".comment-list")!;
+    const form = root.querySelector<HTMLFormElement>("form")!;
+    const status = root.querySelector<HTMLElement>(".form-status")!;
+    const escape = (value: unknown) =>
+      String(value ?? "").replace(/[&<>"']/g, (character) => {
+        if (character === "&") return "&amp;";
+        if (character === "<") return "&lt;";
+        if (character === ">") return "&gt;";
+        if (character === '"') return "&quot;";
+        return "&#39;";
+      });
+    const load = async () => {
+      try {
+        const response = await fetch(endpoint, {
+          headers: { Accept: "application/json" },
+        });
+        const payload = await response.json();
+        const comments = payload.data || [];
+        list.innerHTML = comments.length
+          ? comments
+              .map(
+                (comment: any) =>
+                  `<article class="comment"><strong>${escape(comment.authorName)}</strong><time>${escape(comment.createdAt || "")}</time><p>${escape(comment.body).replace(/\n/g, "<br>")}</p></article>`,
+              )
+              .join("")
+          : '<p class="date">まだコメントはありません。</p>';
+      } catch {
+        list.innerHTML = '<p class="date">コメントを読み込めませんでした。</p>';
+      }
+    };
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      status.textContent = "送信しています…";
+      const values = Object.fromEntries(new FormData(form));
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ ...values, authorUrl: "", parentId: null }),
+        });
+        if (!response.ok) throw new Error();
+        form.reset();
+        status.textContent = "送信しました。管理者の承認後に表示されます。";
+      } catch {
+        status.textContent =
+          "送信できませんでした。入力内容を確認して、もう一度お試しください。";
+      }
+    });
+    load();
+  });
+</script>
+
+<style>
+  .comments {
+    margin-top: 60px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .comments > h2 {
+    font-size: 1.7rem;
+  }
+  .comment-form {
+    margin-top: 30px;
+  }
+  .comment-form label {
+    display: grid;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .comment-form input,
+  .comment-form textarea {
+    width: 100%;
+    border: 1px solid #aebfc5;
+    background: #fff;
+    padding: 10px 12px;
+    resize: vertical;
+  }
+  .comment-form textarea {
+    margin-bottom: 16px;
+  }
+  .honeypot {
+    position: absolute !important;
+    left: -9999px !important;
+  }
+  .form-status {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  :global(.comment) {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  :global(.comment time) {
+    display: block;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  :global(.comment p) {
+    white-space: normal;
+  }
+  @media (max-width: 600px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

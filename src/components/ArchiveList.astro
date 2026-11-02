@@ -1,0 +1,93 @@
+---
+import type { CmsContent } from "../lib/cms";
+import { contentUrl, excerpt, formatDate } from "../lib/cms";
+const { articles = [] } = Astro.props as { articles: CmsContent[] };
+---
+
+<div class="archive-list">
+  {articles.map((article) => (
+    <article
+      class="archive-item"
+      data-search-item
+      data-search={`${article.title} ${excerpt(article)} ${article.category?.name || ""} ${article.tags.map((tag) => tag.name).join(" ")}`.toLowerCase()}
+    >
+      <a href={contentUrl(article)}>
+        <img
+          src={article.featuredImage?.url || "/no-image.webp"}
+          alt={
+            article.featuredImage?.alt ||
+            (article.featuredImage ? "" : "No Image")
+          }
+          loading="lazy"
+        />
+      </a>
+      <div>
+        {article.category && (
+          <div class="article-meta">{article.category.name}</div>
+        )}
+        <h2>
+          <a href={contentUrl(article)}>{article.title}</a>
+        </h2>
+        <p>{excerpt(article)}</p>
+        <time class="date" datetime={article.publishedAt}>
+          {formatDate(article.publishedAt)}
+        </time>
+      </div>
+    </article>
+  ))}
+  {articles.length === 0 && (
+    <p class="empty-state">該当する記事はありません。</p>
+  )}
+</div>
+
+<style>
+  .archive-item {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    gap: 26px;
+    padding: 0 0 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .archive-item img {
+    aspect-ratio: 3/2;
+  }
+  .archive-item h2 {
+    font-size: 1.14rem;
+    line-height: 1.4;
+    margin: 1px 0 5px;
+  }
+  .archive-item p {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin: 0 0 3px;
+  }
+  .archive-item:not(:has(> a)) {
+    grid-template-columns: 1fr;
+  }
+  .archive-item[hidden] {
+    display: none;
+  }
+  .empty-state {
+    padding: 36px 0;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+  }
+  @media (max-width: 900px) {
+    .archive-item {
+      grid-template-columns: 180px 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .archive-item {
+      grid-template-columns: 115px 1fr;
+      gap: 16px;
+    }
+    .archive-item p {
+      display: none;
+    }
+    .archive-item:not(:has(> a)) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

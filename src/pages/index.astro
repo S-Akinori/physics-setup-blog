@@ -1,0 +1,326 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Sidebar from "../components/Sidebar.astro";
+import {
+  contentUrl,
+  excerpt,
+  formatDate,
+  getPosts,
+  getTaxonomies,
+} from "../lib/cms";
+
+export const prerender = true;
+
+const [articles, taxonomies] = await Promise.all([getPosts(), getTaxonomies()]);
+const recommended = articles.slice(0, 3);
+const news = articles
+  .filter(
+    (article) =>
+      article.category?.slug === "news" ||
+      article.category?.name === "ニュース",
+  )
+  .sort(
+    (a, b) =>
+      new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
+  )
+  .slice(0, 3);
+---
+
+<BaseLayout>
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <h1>
+          偏差値10アップして合格へ誰も教えてくれない勉強法と物理のノウハウを身につけよ
+        </h1>
+        <p>大学受験物理を、基礎からわかりやすく解説します。</p>
+        <div class="hero-actions">
+          <a class="btn" href="https://ryebourbon.xsrv.jp/homepage/">
+            まずは無料教材をゲット
+          </a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <div class="container">
+    {news.length > 0 && (
+      <section class="news-section" aria-labelledby="news-heading">
+        <h2 id="news-heading">ニュース</h2>
+        <ul class="news-list">
+          {news.map((article) => (
+            <li>
+              <a href={contentUrl(article)}>{article.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section class="section">
+      <h2 class="rule-title">おすすめ記事</h2>
+      <div class="recommended-grid">
+        {recommended.map((article) => (
+          <article class="feature-card">
+            <a href={contentUrl(article)}>
+              <img
+                src={article.featuredImage?.url || "/no-image.webp"}
+                alt={
+                  article.featuredImage?.alt ||
+                  (article.featuredImage ? "" : "No Image")
+                }
+                loading="lazy"
+              />
+            </a>
+            {article.category && (
+              <div class="article-meta">{article.category.name}</div>
+            )}
+            <h3>
+              <a href={contentUrl(article)}>{article.title}</a>
+            </h3>
+            <time class="date" datetime={article.publishedAt}>
+              {formatDate(article.publishedAt)}
+            </time>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="section content-grid" id="latest">
+      <div>
+        <h2 class="rule-title">新着記事</h2>
+        <div class="article-grid">
+          {articles.slice(0, 10).map((article) => (
+            <article class="compact-article">
+              <a href={contentUrl(article)}>
+                <img
+                  src={article.featuredImage?.url || "/no-image.webp"}
+                  alt={
+                    article.featuredImage?.alt ||
+                    (article.featuredImage ? "" : "No Image")
+                  }
+                  loading="lazy"
+                />
+              </a>
+              <div>
+                {article.category && (
+                  <div class="article-meta">{article.category.name}</div>
+                )}
+                <h3>
+                  <a href={contentUrl(article)}>{article.title}</a>
+                </h3>
+                <span class="sr-only">{excerpt(article)}</span>
+                <time class="date" datetime={article.publishedAt}>
+                  {formatDate(article.publishedAt)}
+                </time>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+      <Sidebar articles={articles} categories={taxonomies.categories} />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 560px;
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(
+        90deg,
+        rgba(8, 31, 52, 0.9) 0%,
+        rgba(8, 31, 52, 0.7) 45%,
+        rgba(8, 31, 52, 0.12) 78%
+      ),
+      url("/fv.jpg") center / cover no-repeat;
+    color: #fff;
+  }
+  .hero-inner {
+    min-height: 560px;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+  .hero-copy {
+    display: flex;
+    min-height: 560px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.16;
+    letter-spacing: -0.05em;
+    margin: 0 0 24px;
+  }
+  .hero p {
+    font-size: 1.18rem;
+    margin: 0 0 34px;
+  }
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+  }
+  .text-link {
+    color: #fff;
+    font-weight: 700;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 4px;
+  }
+  .hero-art {
+    height: 360px;
+  }
+  .section {
+    padding: 70px 0;
+  }
+  .rule-title {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 0 0 28px;
+    font-size: 2rem;
+  }
+  .rule-title:after {
+    content: "";
+    height: 1px;
+    background: var(--line);
+    flex: 1;
+  }
+  .recommended-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 0.8fr 0.8fr;
+    gap: 24px;
+  }
+  .feature-card img {
+    aspect-ratio: 3/2;
+  }
+  .feature-card h3 {
+    font-size: 1.25rem;
+    line-height: 1.45;
+    margin: 6px 0;
+  }
+  .article-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 38px;
+  }
+  .compact-article {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 18px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .compact-article img {
+    aspect-ratio: 3/2;
+  }
+  .compact-article h3 {
+    font-size: 1rem;
+    line-height: 1.45;
+    margin: 2px 0 5px;
+  }
+  .news-section {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 30px;
+    padding: 28px 0 30px;
+    border-bottom: 1px solid var(--line);
+  }
+  .news-section h2 {
+    margin: 0;
+    color: var(--teal);
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+  }
+  .news-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .news-list li + li {
+    margin-top: 10px;
+  }
+  .news-list a {
+    display: inline;
+    line-height: 1.55;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition:
+      color 0.2s,
+      text-decoration-color 0.2s;
+  }
+  .news-list a:hover {
+    color: var(--teal);
+    text-decoration-color: currentColor;
+  }
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .hero-copy {
+      min-height: 480px;
+    }
+    .hero {
+      background-position: 62% center;
+    }
+    .hero-art {
+      height: 240px;
+    }
+    .recommended-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .feature-card:first-child {
+      grid-column: 1/-1;
+    }
+    .article-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .hero h1 {
+      font-size: 2.35rem;
+    }
+    .hero p {
+      font-size: 1rem;
+    }
+    .hero-actions {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .hero-copy {
+      min-height: 430px;
+    }
+    .hero-art {
+      display: none;
+    }
+    .section {
+      padding: 48px 0;
+    }
+    .recommended-grid {
+      grid-template-columns: 1fr;
+    }
+    .feature-card:first-child {
+      grid-column: auto;
+    }
+    .compact-article {
+      grid-template-columns: 96px 1fr;
+    }
+    .news-section {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 22px 0 24px;
+    }
+    .news-list li + li {
+      margin-top: 12px;
+    }
+  }
+</style>

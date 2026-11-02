@@ -1,0 +1,109 @@
+---
+import type { MarkdownHeading } from "@astrojs/markdown-remark";
+
+const { headings = [] } = Astro.props as { headings: MarkdownHeading[] };
+const relevantHeadings = headings.filter(
+  (heading) => heading.depth === 2 || heading.depth === 3,
+);
+const sections: Array<{
+  heading: MarkdownHeading;
+  children: MarkdownHeading[];
+}> = [];
+
+for (const heading of relevantHeadings) {
+  if (heading.depth === 2 || sections.length === 0) {
+    sections.push({ heading, children: [] });
+  } else {
+    sections.at(-1)?.children.push(heading);
+  }
+}
+---
+
+{sections.length > 0 && (
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">この記事の目次</h2>
+    <ol class="toc-list">
+      {sections.map((section, index) => (
+        <li class="toc-section">
+          <div class="toc-row">
+            <strong>{String(index + 1).padStart(2, "0")}</strong>
+            <a href={`#${section.heading.slug}`}>{section.heading.text}</a>
+          </div>
+          {section.children.length > 0 && (
+            <ol class="toc-children">
+              {section.children.map((child) => (
+                <li>
+                  <a href={`#${child.slug}`}>{child.text}</a>
+                </li>
+              ))}
+            </ol>
+          )}
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<style>
+  .toc {
+    margin: 32px 0 56px;
+    padding: 24px 28px;
+    border: 1px solid var(--line);
+    background: rgba(255, 253, 249, 0.72);
+  }
+  .toc h2 {
+    margin: 0 0 14px;
+    font-size: 1.12rem;
+  }
+  .toc-list {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+  .toc-section {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .toc-row {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    gap: 12px;
+    padding: 11px 4px;
+  }
+  .toc-row strong {
+    color: var(--teal);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+  }
+  .toc-row a {
+    font-weight: 700;
+  }
+  .toc-children {
+    margin: 0 0 11px;
+    padding: 0 0 0 54px;
+    border: 0;
+    list-style: none;
+  }
+  .toc-children li {
+    display: block;
+    margin: 0;
+    padding: 3px 0;
+    border: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
+  .toc a:hover {
+    color: var(--teal);
+  }
+  @media (max-width: 600px) {
+    .toc {
+      padding: 20px 18px;
+    }
+    .toc-children {
+      padding-left: 50px;
+    }
+  }
+</style>

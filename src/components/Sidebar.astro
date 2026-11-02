@@ -1,0 +1,179 @@
+---
+import type { CmsContent, Taxonomy } from "../lib/cms";
+import { categoryUrl, contentUrl, formatDate } from "../lib/cms";
+import { imageFor } from "../data/articles";
+const { articles = [], categories = [] } = Astro.props as {
+  articles?: CmsContent[];
+  categories?: Taxonomy[];
+};
+---
+
+<aside class="sidebar">
+  <section>
+    <h2>サイト内検索</h2>
+    <form class="search-form" action="/search/">
+      <input name="q" placeholder="キーワードで検索" />
+      <button aria-label="検索">⌕</button>
+    </form>
+  </section>
+  <section class="promo" id="material">
+    <h2>無料のSetUpノート</h2>
+    <img
+      src={imageFor("notebook", 600, 260)}
+      alt="机に置かれたSetUpノート"
+      loading="lazy"
+    />
+    <p>受験物理の要点をまとめたオリジナルノートを無料で配布しています。</p>
+    <a class="btn" href="#">
+      無料教材を見る
+    </a>
+  </section>
+  <section>
+    <h2>カテゴリー</h2>
+    <ul class="category-list">
+      {categories.map((category) => (
+        <li>
+          <a href={categoryUrl(category)}>
+            {category.name} <span>›</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+  <section>
+    <h2>新着の記事</h2>
+    {articles.slice(0, 3).map((article) => (
+      <a class="compact-article" href={contentUrl(article)}>
+        <img
+          src={article.featuredImage?.url || "/no-image.webp"}
+          alt={
+            article.featuredImage?.alt ||
+            (article.featuredImage ? "" : "No Image")
+          }
+          loading="lazy"
+        />
+        <div>
+          <h3>{article.title}</h3>
+          <span class="date">{formatDate(article.publishedAt)}</span>
+        </div>
+      </a>
+    ))}
+  </section>
+  <section id="profile">
+    <h2>運営者プロフィール</h2>
+    <div class="profile">
+      <img
+        src="/operator-profile.webp"
+        alt="オンライン物理塾長 あっきー"
+        loading="lazy"
+      />
+      <div>
+        <strong>
+          オンライン物理塾長
+          <br />
+          あっきー
+        </strong>
+        <p>大学受験物理を、わかりやすくシンプルに伝えています。</p>
+      </div>
+    </div>
+  </section>
+</aside>
+
+<style>
+  .sidebar {
+    border-left: 1px solid var(--line);
+    padding-left: 32px;
+  }
+  .sidebar section {
+    padding: 0 0 28px;
+    margin: 0 0 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sidebar h2 {
+    font-size: 1.15rem;
+    margin: 0 0 14px;
+  }
+  .search-form {
+    display: flex;
+    border: 1px solid #aebfc5;
+    background: #fff;
+  }
+  .search-form input {
+    width: 100%;
+    border: 0;
+    background: none;
+    padding: 10px 12px;
+    outline: none;
+  }
+  .search-form button {
+    border: 0;
+    background: none;
+    padding: 0 12px;
+    color: var(--ink);
+  }
+  .promo img {
+    aspect-ratio: 16/7;
+    margin-bottom: 10px;
+  }
+  .promo p {
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+  .category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .category-list li {
+    border-top: 1px solid var(--line);
+  }
+  .category-list a {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    font-size: 0.9rem;
+  }
+  .compact-article {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 18px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .compact-article img {
+    aspect-ratio: 3/2;
+  }
+  .compact-article h3 {
+    font-size: 1rem;
+    line-height: 1.45;
+    margin: 2px 0 5px;
+  }
+  .profile {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 15px;
+    align-items: start;
+  }
+  .profile img {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+  }
+  .profile p {
+    font-size: 0.78rem;
+    line-height: 1.65;
+    margin: 4px 0;
+  }
+  @media (max-width: 900px) {
+    .sidebar {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+      padding: 36px 0 0;
+    }
+  }
+  @media (max-width: 600px) {
+    .compact-article {
+      grid-template-columns: 96px 1fr;
+    }
+  }
+</style>

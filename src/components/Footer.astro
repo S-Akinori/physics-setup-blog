@@ -1,0 +1,133 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a
+          class="brand-logo brand-logo-footer"
+          href="/"
+          aria-label="受験物理 Set Up ホーム"
+        >
+          <span class="brand-mark" aria-hidden="true">
+            <img src="/site-logo.png" alt="" />
+          </span>
+          <span>受験物理 Set Up</span>
+        </a>
+        <p>大学受験物理を、基礎からわかりやすく。</p>
+      </div>
+      <div class="footer-col">
+        <h2>カテゴリー</h2>
+        <a href="/category/dynamics/">力学</a>
+        <a href="/category/dynamics/">波動・光</a>
+        <a href="/category/dynamics/">熱力学</a>
+        <a href="/category/dynamics/">電気・磁気</a>
+        <a href="/category/dynamics/">原子</a>
+      </div>
+      <div class="footer-col">
+        <h2>サイトリンク</h2>
+        <a href="/">ホーム</a>
+        <a href="/category/dynamics/">記事一覧</a>
+        <a href="/sitemap/">サイトマップ</a>
+        <a href="#material">無料教材</a>
+        <a href="#profile">運営者紹介</a>
+      </div>
+      <div class="footer-col">
+        <h2>ご案内</h2>
+        <a href="#">お問い合わせ</a>
+        <a href="#">運営会社</a>
+        <a href="#">プライバシーポリシー</a>
+      </div>
+    </div>
+    <div class="copyright">© 2026 受験物理 Set Up. All rights reserved.</div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--ink);
+    color: #fff;
+    padding: 54px 0 30px;
+    margin-top: 70px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+    gap: 45px;
+  }
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .brand-mark {
+    position: relative;
+    display: block;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    overflow: hidden;
+    border-radius: 9px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  }
+  .brand-mark img {
+    position: absolute;
+    top: -20px;
+    left: -28px;
+    width: 100px;
+    max-width: none;
+  }
+  .footer-brand p,
+  .footer-col a {
+    color: #dbe5e8;
+  }
+  .footer-col {
+    border-left: 1px solid #668094;
+    padding-left: 32px;
+  }
+  .footer-col h2 {
+    font-size: 0.95rem;
+  }
+  .footer-col a {
+    display: block;
+    font-size: 0.82rem;
+    margin: 5px 0;
+  }
+  .copyright {
+    margin-top: 36px;
+    font-size: 0.72rem;
+    color: #afc2ca;
+  }
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+    .footer-col {
+      border-left: 0;
+      border-top: 1px solid #668094;
+      padding: 20px 0 0;
+    }
+    .brand-logo {
+      gap: 7px;
+      font-size: 1.35rem;
+    }
+    .brand-mark {
+      flex-basis: 38px;
+      width: 38px;
+      height: 38px;
+    }
+    .brand-mark img {
+      top: -18px;
+      left: -27px;
+      width: 92px;
+    }
+  }
+</style>

@@ -1,0 +1,155 @@
+:root {
+  --paper: #f7f6f1;
+  --ink: #102a43;
+  --teal: #0a9292;
+  --orange: #e98024;
+  --line: #c7d7dc;
+  --muted: #657b8d;
+  --white: #fffdf9;
+  --max: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    "Noto Sans JP", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN",
+    sans-serif;
+  line-height: 1.75;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.container {
+  width: min(calc(100% - 48px), var(--max));
+  margin-inline: auto;
+}
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.3fr) minmax(270px, 0.9fr);
+  gap: 52px;
+  align-items: start;
+}
+.eyebrow {
+  color: var(--teal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.article-meta {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 12px;
+}
+.date {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.breadcrumb {
+  padding: 12px 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.page-head {
+  padding: 24px 0 28px;
+}
+.page-head h1 {
+  margin: 5px 0;
+  font-size: 3rem;
+  line-height: 1.25;
+}
+.page-head p {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 700;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.btn:hover {
+  background: #ce6d18;
+  transform: translateY(-1px);
+}
+.btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 4px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  top: 12px;
+  left: 12px;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: #fff;
+  transform: translateY(-160%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 0;
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .container {
+    width: min(calc(100% - 30px), var(--max));
+  }
+  .content-grid {
+    gap: 40px;
+  }
+  .page-head h1 {
+    font-size: 2rem;
+  }
+}

@@ -1,0 +1,246 @@
+---
+const path = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand-logo" href="/" aria-label="受験物理 Set Up ホーム">
+      <span class="brand-mark" aria-hidden="true">
+        <img src="/site-logo.png" alt="" />
+      </span>
+      <span>受験物理 Set Up</span>
+    </a>
+    <nav class="nav" id="main-navigation" aria-label="メインナビゲーション">
+      <a class={path === "/" ? "active" : ""} href="/">
+        ホーム
+      </a>
+      <a
+        class={path.includes("dynamics") ? "active" : ""}
+        href="/category/dynamics/"
+      >
+        力学
+      </a>
+      <a href="/category/wave/">波動・光</a>
+      <a href="/category/thermodynamics/">熱力学</a>
+      <a href="/category/electromagnetism/">電気・磁気</a>
+      <a href="/category/atom/">原子</a>
+      <a class="search-icon" href="/search/" aria-label="検索">
+        ⌕
+      </a>
+      <a class="btn" href="#material">
+        無料教材
+      </a>
+    </nav>
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-label="メニューを開く"
+      aria-controls="main-navigation"
+      aria-expanded="false"
+    >
+      <span class="menu-icon" aria-hidden="true">
+        ☰
+      </span>
+    </button>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>(".site-header");
+  const menu = header?.querySelector<HTMLElement>(".nav");
+  const toggle = header?.querySelector<HTMLButtonElement>(".menu-toggle");
+  const icon = toggle?.querySelector<HTMLElement>(".menu-icon");
+
+  const closeMenu = () => {
+    menu?.classList.remove("is-open");
+    document.body.classList.remove("menu-open");
+    toggle?.setAttribute("aria-expanded", "false");
+    toggle?.setAttribute("aria-label", "メニューを開く");
+    if (icon) icon.textContent = "☰";
+  };
+
+  const openMenu = () => {
+    menu?.classList.add("is-open");
+    document.body.classList.add("menu-open");
+    toggle?.setAttribute("aria-expanded", "true");
+    toggle?.setAttribute("aria-label", "メニューを閉じる");
+    if (icon) icon.textContent = "×";
+  };
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    if (isOpen) closeMenu();
+    else openMenu();
+  });
+
+  menu?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      toggle?.getAttribute("aria-expanded") === "true"
+    ) {
+      closeMenu();
+      toggle.focus();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (header && !header.contains(event.target as Node)) closeMenu();
+  });
+
+  window.matchMedia("(min-width: 901px)").addEventListener("change", closeMenu);
+</script>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 20;
+    height: 82px;
+    display: flex;
+    align-items: center;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+  }
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .brand-mark {
+    position: relative;
+    display: block;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    overflow: hidden;
+    border-radius: 9px;
+  }
+  .brand-mark img {
+    position: absolute;
+    top: -20px;
+    left: -28px;
+    width: 100px;
+    max-width: none;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+  .nav a {
+    padding: 28px 0 22px;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover,
+  .nav a.active {
+    color: var(--teal);
+    border-color: var(--teal);
+  }
+  .nav .btn {
+    padding: 0 28px;
+    border-bottom: 0;
+  }
+  .search-icon {
+    font-size: 1.4rem;
+  }
+  .menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    font-size: 1.7rem;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  @media (max-width: 900px) {
+    :global(body) {
+      padding-top: 68px;
+    }
+    :global(body.menu-open) {
+      overflow: hidden;
+    }
+    .site-header {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 68px;
+      background: var(--paper);
+      box-shadow: 0 1px 0 var(--line);
+    }
+    .nav {
+      display: flex;
+      position: fixed;
+      top: 68px;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      padding: 28px max(24px, calc((100% - var(--max)) / 2)) 40px;
+      overflow-y: auto;
+      border-top: 1px solid var(--line);
+      background: var(--white);
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateX(100%);
+      transition:
+        transform 0.3s ease,
+        opacity 0.2s ease,
+        visibility 0.3s;
+    }
+    .nav.is-open {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .nav a {
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 1rem;
+    }
+    .nav .btn {
+      margin-top: 14px;
+      border-bottom: 0;
+    }
+    .menu-toggle {
+      display: inline-flex;
+    }
+  }
+  @media (max-width: 600px) {
+    .brand-logo {
+      gap: 7px;
+      font-size: 1.05rem;
+    }
+    .brand-mark {
+      flex-basis: 38px;
+      width: 38px;
+      height: 38px;
+    }
+    .brand-mark img {
+      top: -18px;
+      left: -27px;
+      width: 92px;
+    }
+  }
+</style>

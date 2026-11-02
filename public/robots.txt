@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ryebourbon.xsrv.jp/sitemap.xml

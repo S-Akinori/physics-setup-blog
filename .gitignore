@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Astro and build output
+.astro/
+dist/
+
+# Local environment variables
+.env
+.env.*
+!.env.example
+
+# Local test and browser artifacts
+.playwright-cli/
+output/
+
+# Logs and editor files
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

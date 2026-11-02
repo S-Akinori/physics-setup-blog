@@ -1,0 +1,225 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  categoryUrl,
+  contentUrl,
+  getPages,
+  getPosts,
+  getTaxonomies,
+} from "../../lib/cms";
+
+export const prerender = true;
+
+const [allPosts, allPages, taxonomies] = await Promise.all([
+  getPosts(),
+  getPages(),
+  getTaxonomies(),
+]);
+const posts = allPosts.filter((post) => !post.seo.noindex);
+const pages = allPages.filter(
+  (page) => !page.seo.noindex && page.slug !== "sitemap",
+);
+
+const postSections = taxonomies.categories
+  .map((category) => ({
+    category,
+    posts: posts
+      .filter((post) => post.category?.slug === category.slug)
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
+      ),
+  }))
+  .filter((section) => section.posts.length > 0);
+
+const uncategorized = posts.filter((post) => !post.category);
+---
+
+<BaseLayout
+  title="サイトマップ | 受験物理 Set Up"
+  description="受験物理 Set Upのカテゴリー、記事、固定ページを一覧でご案内します。"
+>
+  <div class="container sitemap-page">
+    <div class="breadcrumb">
+      <a href="/">ホーム</a>　/　サイトマップ
+    </div>
+    <header class="page-head sitemap-head">
+      <div class="eyebrow">SITEMAP</div>
+      <h1>サイトマップ</h1>
+      <p>カテゴリーや記事を一覧から探せます。</p>
+    </header>
+
+    <nav class="sitemap-primary" aria-label="主要ページ">
+      <h2>主要ページ</h2>
+      <ul>
+        <li>
+          <a href="/">ホーム</a>
+        </li>
+        <li>
+          <a href="/search/">記事を検索</a>
+        </li>
+        {pages.map((page) => (
+          <li>
+            <a href={contentUrl(page)}>{page.title}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="sitemap-sections">
+      {postSections.map(({ category, posts: categoryPosts }) => (
+        <section class="sitemap-section">
+          <div class="sitemap-section-head">
+            <h2>{category.name}</h2>
+            <a href={categoryUrl(category)}>カテゴリーを見る</a>
+          </div>
+          <ul>
+            {categoryPosts.map((post) => (
+              <li>
+                <a href={contentUrl(post)}>{post.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+
+      {uncategorized.length > 0 && (
+        <section class="sitemap-section">
+          <div class="sitemap-section-head">
+            <h2>その他の記事</h2>
+          </div>
+          <ul>
+            {uncategorized.map((post) => (
+              <li>
+                <a href={contentUrl(post)}>{post.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .sitemap-page {
+    padding-bottom: 30px;
+  }
+  .sitemap-head {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 42px;
+  }
+  .sitemap-primary {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 34px;
+    padding: 32px 0 38px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sitemap-primary h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .sitemap-primary ul,
+  .sitemap-section ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sitemap-primary ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 28px;
+  }
+  .sitemap-primary a,
+  .sitemap-section li a {
+    display: inline;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition:
+      color 0.2s,
+      text-decoration-color 0.2s;
+  }
+  .sitemap-primary a:hover,
+  .sitemap-section li a:hover {
+    color: var(--teal);
+    text-decoration-color: currentColor;
+  }
+  .sitemap-sections {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 64px;
+  }
+  .sitemap-section {
+    padding: 44px 0 48px;
+    border-bottom: 1px solid var(--line);
+    break-inside: avoid;
+  }
+  .sitemap-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .sitemap-section-head h2 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  .sitemap-section-head > a {
+    flex: none;
+    color: var(--teal);
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+  .sitemap-section li {
+    position: relative;
+    padding-left: 18px;
+    line-height: 1.55;
+  }
+  .sitemap-section li + li {
+    margin-top: 10px;
+  }
+  .sitemap-section li:before {
+    content: "";
+    position: absolute;
+    top: 0.68em;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    background: var(--teal);
+  }
+  @media (max-width: 800px) {
+    .sitemap-primary {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .sitemap-primary ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .sitemap-sections {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+  @media (max-width: 600px) {
+    .sitemap-head {
+      padding-bottom: 30px;
+    }
+    .sitemap-primary ul {
+      grid-template-columns: 1fr;
+    }
+    .sitemap-section {
+      padding: 34px 0 38px;
+    }
+    .sitemap-section-head {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .sitemap-section-head h2 {
+      font-size: 1.3rem;
+    }
+  }
+</style>

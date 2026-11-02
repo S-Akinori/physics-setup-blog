@@ -1,0 +1,84 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Sidebar from "../../../../components/Sidebar.astro";
+import ArchiveList from "../../../../components/ArchiveList.astro";
+import Pagination from "../../../../components/Pagination.astro";
+import {
+  ARTICLES_PER_PAGE,
+  getPosts,
+  getTaxonomies,
+  type Taxonomy,
+} from "../../../../lib/cms";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const [posts, taxonomies] = await Promise.all([getPosts(), getTaxonomies()]);
+  return taxonomies.categories.flatMap((category) => {
+    const categoryPosts = posts.filter(
+      (post) => post.category?.slug === category.slug,
+    );
+    const totalPages = Math.ceil(categoryPosts.length / ARTICLES_PER_PAGE);
+    return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => {
+      const currentPage = index + 2;
+      return {
+        params: { slug: category.slug, page: String(currentPage) },
+        props: {
+          category,
+          articles: categoryPosts,
+          allPosts: posts,
+          categories: taxonomies.categories,
+          currentPage,
+        },
+      };
+    });
+  });
+}
+
+const { category, articles, allPosts, categories, currentPage } =
+  Astro.props as {
+    category: Taxonomy;
+    articles: Awaited<ReturnType<typeof getPosts>>;
+    allPosts: Awaited<ReturnType<typeof getPosts>>;
+    categories: Taxonomy[];
+    currentPage: number;
+  };
+const totalPages = Math.ceil(articles.length / ARTICLES_PER_PAGE);
+const start = (currentPage - 1) * ARTICLES_PER_PAGE;
+const visibleArticles = articles.slice(start, start + ARTICLES_PER_PAGE);
+---
+
+<BaseLayout
+  title={`${category.name}の記事一覧 ${currentPage}ページ目 | 受験物理 Set Up`}
+  description={`${category.name}の記事一覧、${currentPage}ページ目です。`}
+>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">ホーム</a>　/　
+      <a href={`/category/${category.slug}/`}>{category.name}</a>　/　
+      {currentPage}ページ目
+    </div>
+    <header class="page-head">
+      <div class="eyebrow">CATEGORY</div>
+      <h1>{category.name}の記事一覧</h1>
+      <p>
+        {category.name}
+        の基礎から入試問題まで、順番に学べる記事をまとめています。
+      </p>
+      <div class="date">
+        全{articles.length}記事　{currentPage} / {totalPages}ページ
+      </div>
+    </header>
+    <div class="content-grid">
+      <div>
+        <ArchiveList articles={visibleArticles} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          basePath={`/category/${category.slug}`}
+        />
+      </div>
+      <Sidebar articles={allPosts} categories={categories} />
+    </div>
+  </div>
+</BaseLayout>

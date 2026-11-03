@@ -9,59 +9,28 @@ import {
   excerpt,
   formatDate,
   getAllContent,
-  getProtectedContent,
   getTaxonomies,
   type CmsContent,
 } from "../../lib/cms";
 import { renderMarkdown } from "../../lib/markdown";
 
-const slug = Astro.params.slug || "";
-const [content, taxonomies] = await Promise.all([
-  getAllContent(),
-  getTaxonomies(),
-]);
-const posts = content.filter((item) => item.type === "post");
-const categories = taxonomies.categories;
-let entry = content.find((item) => item.slug === slug) as
-  CmsContent | undefined;
-
-if (!entry) {
-  return new Response("Not Found", { status: 404 });
+export async function getStaticPaths() {
+  const [content, taxonomies] = await Promise.all([
+    getAllContent(),
+    getTaxonomies(),
+  ]);
+  const posts = content.filter((item) => item.type === "post");
+  return content.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry, posts, categories: taxonomies.categories },
+  }));
 }
 
-let protectionError: string | null = entry.passwordProtected
-  ? "このページはパスワードで保護されています。"
-  : null;
-
-if (entry.passwordProtected) {
-  Astro.response.headers.set("Cache-Control", "private, no-store");
-  if (Astro.request.method === "POST") {
-    const formData = await Astro.request.formData();
-    const password = String(formData.get("password") || "");
-
-    if (!password) {
-      protectionError = "パスワードを入力してください。";
-    } else {
-      const result = await getProtectedContent(entry, password);
-      if (result.status === "ok") {
-        entry = result.content;
-        protectionError = null;
-      } else if (result.status === "rate-limited") {
-        Astro.response.status = 429;
-        protectionError =
-          "試行回数が多すぎます。時間を置いて再試行してください。";
-      } else if (result.status === "error") {
-        Astro.response.status = 502;
-        protectionError =
-          "限定公開ページを取得できませんでした。時間を置いて再試行してください。";
-      } else if (result.status === "not-found") {
-        return new Response("Not Found", { status: 404 });
-      } else {
-        protectionError = "パスワードが正しくありません。";
-      }
-    }
-  }
-}
+const { entry, posts, categories } = Astro.props as {
+  entry: CmsContent;
+  posts: CmsContent[];
+  categories: Awaited<ReturnType<typeof getTaxonomies>>["categories"];
+};
 
 const rendered = await renderMarkdown(entry.bodyMarkdown || "");
 const title = entry.seo.title || `${entry.title} | 受験物理 Set Up`;
@@ -87,30 +56,48 @@ const description = entry.seo.description || excerpt(entry);
     </div>
     <div class="content-grid article-page">
       <article id="article-start">
-        {protectionError ? (
+        {entry.passwordProtected ? (
           <section class="protected-content" aria-labelledby="protected-title">
             <div class="eyebrow">PROTECTED</div>
             <h1 id="protected-title">{entry.title}</h1>
-            <p>{protectionError}</p>
-            <form class="password-form" method="post">
-              <label for="content-password">パスワード</label>
-              <div class="password-fields">
-                <input
-                  id="content-password"
-                  name="password"
-                  type="password"
-                  required
-                  autocomplete="current-password"
-                  autofocus
-                />
-                <button class="btn" type="submit">
-                  閲覧する
-                </button>
-              </div>
-            </form>
-            <p class="protected-help">
-              パスワードは保存されず、この認証処理にのみ使用します。
-            </p>
+            <div data-password-gate>
+              <p data-password-message>
+                このページはパスワードで保護されています。
+              </p>
+              <form
+                class="password-form"
+                data-password-form
+                data-content-type={entry.type}
+                data-content-slug={entry.slug}
+              >
+                <label for="content-password">パスワード</label>
+                <div class="password-fields">
+                  <input
+                    id="content-password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                  />
+                  <button class="btn" type="submit">
+                    閲覧する
+                  </button>
+                </div>
+              </form>
+              <p class="protected-help">
+                パスワードは保存されず、この認証処理にのみ使用します。
+              </p>
+            </div>
+            <nav
+              class="protected-toc"
+              data-protected-toc
+              aria-labelledby="protected-toc-title"
+              hidden
+            >
+              <h2 id="protected-toc-title">この記事の目次</h2>
+              <ol data-protected-toc-list></ol>
+            </nav>
+            <div class="prose" data-protected-body></div>
           </section>
         ) : (
           <>
@@ -156,16 +143,16 @@ const description = entry.seo.description || excerpt(entry);
                   type={entry.type === "page" ? "pages" : "posts"}
                 />
               )}
-            <a
-              class="back-to-article-top"
-              href="#article-start"
-              aria-label="記事の最初に戻る"
-            >
-              <span aria-hidden="true">↑</span>
-              記事の最初に戻る
-            </a>
           </>
         )}
+        <a
+          class="back-to-article-top"
+          href="#article-start"
+          aria-label="記事の最初に戻る"
+        >
+          <span aria-hidden="true">↑</span>
+          記事の最初に戻る
+        </a>
       </article>
       <Sidebar articles={posts} categories={categories} />
     </div>
@@ -173,6 +160,89 @@ const description = entry.seo.description || excerpt(entry);
 </BaseLayout>
 
 <script>
+  import DOMPurify from "dompurify";
+  import { marked } from "marked";
+  import markedKatex from "marked-katex-extension";
+
+  marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
+
+  const passwordForm = document.querySelector<HTMLFormElement>(
+    "[data-password-form]",
+  );
+  passwordForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const gate = document.querySelector<HTMLElement>("[data-password-gate]");
+    const message = document.querySelector<HTMLElement>(
+      "[data-password-message]",
+    );
+    const body = document.querySelector<HTMLElement>("[data-protected-body]");
+    const toc = document.querySelector<HTMLElement>("[data-protected-toc]");
+    const tocList = document.querySelector<HTMLOListElement>(
+      "[data-protected-toc-list]",
+    );
+    const submit = passwordForm.querySelector<HTMLButtonElement>("button");
+    const password = new FormData(passwordForm).get("password");
+
+    if (!message || !body || !password) return;
+    message.textContent = "確認しています…";
+    if (submit) submit.disabled = true;
+
+    try {
+      const response = await fetch("/api/content.php", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          type: passwordForm.dataset.contentType,
+          slug: passwordForm.dataset.contentSlug,
+          password,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (response.status === 401)
+        throw new Error("パスワードが正しくありません。");
+      if (response.status === 429)
+        throw new Error(
+          "試行回数が多すぎます。時間を置いて再試行してください。",
+        );
+      if (!response.ok || !payload?.data?.bodyMarkdown) {
+        throw new Error("限定公開ページを取得できませんでした。");
+      }
+
+      const rendered = await marked.parse(payload.data.bodyMarkdown);
+      body.innerHTML = DOMPurify.sanitize(rendered, {
+        USE_PROFILES: { html: true },
+      });
+
+      const headings = [...body.querySelectorAll<HTMLHeadingElement>("h2, h3")];
+      headings.forEach((heading, index) => {
+        heading.id = `protected-heading-${index + 1}`;
+      });
+      if (toc && tocList && headings.length > 0) {
+        tocList.replaceChildren(
+          ...headings.map((heading) => {
+            const item = document.createElement("li");
+            if (heading.tagName === "H3") item.className = "toc-child";
+            const link = document.createElement("a");
+            link.href = `#${heading.id}`;
+            link.textContent = heading.textContent || "";
+            item.append(link);
+            return item;
+          }),
+        );
+        toc.hidden = false;
+      }
+      if (gate) gate.hidden = true;
+    } catch (error) {
+      message.textContent =
+        error instanceof Error ? error.message : "認証できませんでした。";
+      if (submit) submit.disabled = false;
+    }
+  });
+
   const backToTop = document.querySelector<HTMLElement>(".back-to-article-top");
   const updateBackToTop = () => {
     backToTop?.classList.toggle("is-visible", window.scrollY > 480);
@@ -223,6 +293,37 @@ const description = entry.seo.description || excerpt(entry);
     border: 1px solid #aebfc5;
     border-radius: 3px;
     background: #fff;
+  }
+  .password-fields button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+  .protected-toc {
+    margin: 34px 0 46px;
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    background: rgba(255, 253, 249, 0.72);
+  }
+  .protected-toc h2 {
+    margin: 0 0 12px;
+    font-size: 1.12rem;
+  }
+  .protected-toc ol {
+    margin: 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+  .protected-toc li + li {
+    margin-top: 7px;
+  }
+  .protected-toc .toc-child {
+    padding-left: 22px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .protected-toc a:hover {
+    color: var(--teal);
   }
   #article-start {
     scroll-margin-top: 96px;

@@ -135,44 +135,6 @@ export async function getAllContent(): Promise<CmsContent[]> {
   return [...posts, ...pages];
 }
 
-export type ProtectedContentResult =
-  | { status: "ok"; content: CmsContent }
-  | { status: "unauthorized" }
-  | { status: "rate-limited" }
-  | { status: "not-found" }
-  | { status: "error" };
-
-export async function getProtectedContent(
-  content: Pick<CmsContent, "slug" | "type">,
-  password: string,
-): Promise<ProtectedContentResult> {
-  if (!apiBase) return { status: "error" };
-  const endpoint = content.type === "page" ? "pages" : "posts";
-
-  try {
-    const response = await fetch(
-      `${apiBase}/api/v1/${endpoint}/${encodeURIComponent(content.slug)}`,
-      {
-        headers: {
-          Accept: "application/json",
-          "X-Content-Password": password,
-        },
-        cache: "no-store",
-      },
-    );
-
-    if (response.status === 401) return { status: "unauthorized" };
-    if (response.status === 404) return { status: "not-found" };
-    if (response.status === 429) return { status: "rate-limited" };
-    if (!response.ok) return { status: "error" };
-
-    const payload = (await response.json()) as { data: CmsContent };
-    return { status: "ok", content: payload.data };
-  } catch {
-    return { status: "error" };
-  }
-}
-
 export async function getTaxonomies(): Promise<{
   categories: Taxonomy[];
   tags: Taxonomy[];

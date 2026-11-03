@@ -1,0 +1,71 @@
+name: Deploy to Xserver
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [cms-published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xserver-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CMS_API_URL: ${{ secrets.CMS_API_URL }}
+      SITE_URL: ${{ secrets.SITE_URL }}
+      PUBLIC_GA4_MEASUREMENT_ID: ${{ secrets.PUBLIC_GA4_MEASUREMENT_ID }}
+      PUBLIC_GOOGLE_ADSENSE_CLIENT_ID: ${{ secrets.PUBLIC_GOOGLE_ADSENSE_CLIENT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Astro project
+        run: npx astro check
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Create protected-content proxy config
+        run: node scripts/write-deploy-config.mjs
+
+      - name: Configure SSH
+        env:
+          XSERVER_SSH_KEY: ${{ secrets.XSERVER_SSH_KEY }}
+          XSERVER_KNOWN_HOSTS: ${{ secrets.XSERVER_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$XSERVER_SSH_KEY" > ~/.ssh/xserver
+          chmod 600 ~/.ssh/xserver
+          printf '%s\n' "$XSERVER_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy to public_html
+        env:
+          XSERVER_HOST: ${{ secrets.XSERVER_HOST }}
+          XSERVER_USER: ${{ secrets.XSERVER_USER }}
+          XSERVER_DEPLOY_PATH: ${{ secrets.XSERVER_DEPLOY_PATH }}
+        run: |
+          test -n "$XSERVER_HOST"
+          test -n "$XSERVER_USER"
+          test -n "$XSERVER_DEPLOY_PATH"
+          rsync -az --checksum \
+            -e "ssh -i ~/.ssh/xserver -p 10022 -o IdentitiesOnly=yes" \
+            dist/ "$XSERVER_USER@$XSERVER_HOST:$XSERVER_DEPLOY_PATH/"

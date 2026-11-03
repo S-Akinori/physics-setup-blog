@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="ページが見つかりません | 受験物理 Set Up"
+  description="お探しのページは見つかりませんでした。"
+  noindex={true}
+>
+  <section class="container not-found">
+    <div class="eyebrow">404</div>
+    <h1>ページが見つかりません</h1>
+    <p>URLが変更されたか、ページが削除された可能性があります。</p>
+    <a class="btn" href="/">
+      トップページへ戻る
+    </a>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    min-height: 56vh;
+    padding-block: 90px 120px;
+  }
+  .not-found h1 {
+    margin: 8px 0 14px;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.25;
+  }
+  .not-found p {
+    margin: 0 0 30px;
+  }
+</style>

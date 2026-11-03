@@ -48,10 +48,38 @@ CMSで公開した内容を本番へ反映するには、CMSの公開Webhookか�
 
 CMSで限定公開パスワードを設定した記事・固定ページは、AstroのSSRルートでパスワード入力フォームを表示します。CMSの記事設定で指定した限定公開パスワードだけを入力すると閲覧できます。
 
-フォームで受け取ったパスワードはサーバー側でCMSの`X-Content-Password`ヘッダーへ変換し、そのリクエスト内だけで使用します。URL、Cookie、ローカルストレージ、静的HTMLには保存しません。限定公開レスポンスは`private, no-store`かつ`noindex`です。ページを再読み込みした場合は再入力が必要です。
+限定本文は静的HTMLへ含めません。ブラウザからXserver上の`/api/content.php`へパスワードをPOSTし、PHPがCMSの`X-Content-Password`ヘッダーへ変換します。URL、Cookie、ローカルストレージには保存しません。ページを再読み込みした場合は再入力が必要です。
 
-SSR部分はVercel Functionsで実行します。Vercelのプロジェクト設定へ`CMS_API_URL`と、独自ドメインを使用する場合は`SITE_URL`を登録してください。CMSとの通信は必ずHTTPSにしてください。
+CMSとの通信は必ずHTTPSを使用します。デプロイ時にGitHub Actionsが`CMS_API_URL`から`dist/api/config.php`を生成し、`.htaccess`で外部アクセスを拒否します。
 
-## Vercelへのデプロイ
+## Xserverへの自動デプロイ
 
-Framework Presetは`Astro`、Build Commandは`npm run build`を使用します。Output Directoryは上書きせず、Vercelの自動検出に任せてください。ルートディレクトリはこのプロジェクトの`package.json`が置かれている場所です。
+`.github/workflows/deploy-xserver.yml`が、次のタイミングで静的サイトをビルドしてXserverへSSH転送します。
+
+- `main`ブランチへのpush
+- GitHub Actionsからの手動実行
+- `cms-published`の`repository_dispatch`
+
+GitHubリポジトリの`Settings > Secrets and variables > Actions`へ次を登録します。
+
+- `CMS_API_URL`: 公開CMSのHTTPS URL
+- `SITE_URL`: 公開サイトURL（例：`https://ryebourbon.xsrv.jp`）
+- `PUBLIC_GA4_MEASUREMENT_ID`: GA4測定ID（例：`G-XXXXXXXXXX`）
+- `PUBLIC_GOOGLE_ADSENSE_CLIENT_ID`: AdSenseパブリッシャーID（例：`ca-pub-1234567890123456`）
+- `XSERVER_HOST`: `サーバーID.xsrv.jp`または`sv***.xserver.jp`
+- `XSERVER_USER`: XserverのサーバーID
+- `XSERVER_SSH_KEY`: Xserverへ登録した公開鍵に対応する秘密鍵
+- `XSERVER_KNOWN_HOSTS`: サーバーパネルに表示されるSSHホスト鍵情報
+- `XSERVER_DEPLOY_PATH`: `/home/サーバーID/対象ドメイン/public_html`
+
+XserverのSSHポートは`10022`です。GitHub Actionsの実行元は国外IPになる場合があるため、接続できない場合はXserverのSSHアクセス制限を確認してください。
+
+ワークフローは安全のため`--delete`を使用しません。WordPressからの初回切り替え前に必ずファイルとDBをバックアップし、可能ならステージング用サブドメインの`public_html`で確認してください。`index.html`と`.htaccess`の配置後はAstroが優先表示されます。動作確認後、残ったWordPressファイルはバックアップを確保してから手動で整理します。
+
+CMSから自動更新する場合は、記事公開WebhookからGitHub APIへ次の`repository_dispatch`を送信します。
+
+```json
+{
+  "event_type": "cms-published"
+}
+```

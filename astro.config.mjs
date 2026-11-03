@@ -1,12 +1,16 @@
 import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
+const vercelProductionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : null;
+
 export default defineConfig({
-  site: 'https://ryebourbon.xsrv.jp',
+  site: process.env.SITE_URL || vercelProductionUrl || 'https://ryebourbon.xsrv.jp',
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  adapter: vercel(),
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],

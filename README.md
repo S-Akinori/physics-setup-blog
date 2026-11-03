@@ -30,7 +30,6 @@ CMSのMarkdownは `remark-math` と `rehype-katex` で処理し、コードブ�
 npm install
 npm run dev
 npm run build
-npm run start
 npx astro check
 ```
 
@@ -51,4 +50,8 @@ CMSで限定公開パスワードを設定した記事・固定ページは、As
 
 フォームで受け取ったパスワードはサーバー側でCMSの`X-Content-Password`ヘッダーへ変換し、そのリクエスト内だけで使用します。URL、Cookie、ローカルストレージ、静的HTMLには保存しません。限定公開レスポンスは`private, no-store`かつ`noindex`です。ページを再読み込みした場合は再入力が必要です。
 
-SSRのため、本番環境では`node dist/server/entry.mjs`を実行できるNode.js環境が必要です。CMSとの通信は必ずHTTPSにしてください。
+SSR部分はVercel Functionsで実行します。Vercelのプロジェクト設定へ`CMS_API_URL`と、独自ドメインを使用する場合は`SITE_URL`を登録してください。CMSとの通信は必ずHTTPSにしてください。
+
+## Vercelへのデプロイ
+
+Framework Presetは`Astro`、Build Commandは`npm run build`を使用します。Output Directoryは上書きせず、Vercelの自動検出に任せてください。ルートディレクトリはこのプロジェクトの`package.json`が置かれている場所です。

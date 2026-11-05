@@ -121,8 +121,6 @@ const description = entry.seo.description || excerpt(entry);
                   class="article-hero"
                   src={entry.featuredImage.url}
                   alt={entry.featuredImage.alt || entry.title}
-                  width={entry.featuredImage.width || 1200}
-                  height={entry.featuredImage.height || 675}
                 />
               )}
             </header>
@@ -161,10 +159,85 @@ const description = entry.seo.description || excerpt(entry);
 
 <script>
   import DOMPurify from "dompurify";
-  import { marked } from "marked";
+  import { Marked } from "marked";
+  import markedFootnote from "marked-footnote";
   import markedKatex from "marked-katex-extension";
+  import { normalizeQiitaMarkdown } from "../../lib/qiita-markdown";
 
-  marked.use(markedKatex({ throwOnError: false, nonStandard: true }));
+  const protectedMarkdown = new Marked().use(
+    { gfm: true },
+    markedFootnote({
+      description: "注釈",
+      refMarkers: true,
+    }),
+    markedKatex({ throwOnError: false, nonStandard: true }),
+  );
+
+  const prepareQiitaMarkup = (container: HTMLElement) => {
+    container.querySelectorAll("blockquote").forEach((quote) => {
+      const marker = quote.firstElementChild?.textContent
+        ?.trim()
+        .match(/^\[!QIITA-NOTE:(info|warn|alert)\]$/);
+      if (!marker) return;
+      quote.firstElementChild?.remove();
+      quote.classList.add("qiita-note", `qiita-note-${marker[1]}`);
+      quote.setAttribute("role", "note");
+    });
+
+    container.querySelectorAll("pre > code").forEach((code) => {
+      const languageClass = [...code.classList].find((className) =>
+        className.startsWith("language-"),
+      );
+      if (!languageClass) return;
+      const languageInfo = languageClass.slice("language-".length);
+      const [language, ...titleParts] = languageInfo.split(":");
+      const title = titleParts.join(":").trim();
+      code.classList.remove(languageClass);
+      code.classList.add(`language-${language}`);
+      if (title) code.parentElement?.setAttribute("data-code-title", title);
+      if (language.toLowerCase() === "mermaid") {
+        code.parentElement?.setAttribute("data-mermaid", "true");
+      }
+    });
+  };
+
+  const renderMermaidBlocks = async (container: HTMLElement) => {
+    const blocks = [
+      ...container.querySelectorAll<HTMLElement>(
+        'pre[data-mermaid="true"], pre[data-language="mermaid"]',
+      ),
+    ];
+    if (!blocks.length) return;
+
+    const { default: mermaid } = await import("mermaid");
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "neutral",
+    });
+
+    for (const [index, block] of blocks.entries()) {
+      const source = block.textContent || "";
+      const wrapper = document.createElement("div");
+      wrapper.className = "mermaid-diagram";
+      try {
+        const id = `mermaid-${Date.now()}-${index}`;
+        const { svg, bindFunctions } = await mermaid.render(id, source);
+        wrapper.innerHTML = DOMPurify.sanitize(svg, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        });
+        block.replaceWith(wrapper);
+        bindFunctions?.(wrapper);
+      } catch {
+        block.classList.add("mermaid-error");
+      }
+    }
+  };
+
+  document.querySelectorAll<HTMLElement>(".prose").forEach((container) => {
+    prepareQiitaMarkup(container);
+    void renderMermaidBlocks(container);
+  });
 
   const passwordForm = document.querySelector<HTMLFormElement>(
     "[data-password-form]",
@@ -212,10 +285,14 @@ const description = entry.seo.description || excerpt(entry);
         throw new Error("限定公開ページを取得できませんでした。");
       }
 
-      const rendered = await marked.parse(payload.data.bodyMarkdown);
+      const rendered = await protectedMarkdown.parse(
+        normalizeQiitaMarkdown(payload.data.bodyMarkdown),
+      );
       body.innerHTML = DOMPurify.sanitize(rendered, {
         USE_PROFILES: { html: true },
       });
+      prepareQiitaMarkup(body);
+      await renderMermaidBlocks(body);
 
       const headings = [...body.querySelectorAll<HTMLHeadingElement>("h2, h3")];
       headings.forEach((heading, index) => {
@@ -448,6 +525,54 @@ const description = entry.seo.description || excerpt(entry);
     border-left: 3px solid var(--teal);
     background: #eaf3f2;
   }
+  :global(.prose .qiita-note) {
+    position: relative;
+    padding: 18px 20px 18px 52px;
+    border: 1px solid #b7d7d7;
+    border-left: 4px solid var(--teal);
+    background: #edf7f6;
+  }
+  :global(.prose .qiita-note:before) {
+    content: "i";
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    color: var(--teal);
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  :global(.prose .qiita-note-warn) {
+    border-color: #edc38e;
+    border-left-color: var(--orange);
+    background: #fff5e8;
+  }
+  :global(.prose .qiita-note-warn:before) {
+    content: "!";
+    color: var(--orange);
+  }
+  :global(.prose .qiita-note-alert) {
+    border-color: #e3b2b2;
+    border-left-color: #b84a4a;
+    background: #fff0f0;
+  }
+  :global(.prose .qiita-note-alert:before) {
+    content: "!";
+    color: #b84a4a;
+  }
+  :global(.prose .qiita-note > :first-child) {
+    margin-top: 0;
+  }
+  :global(.prose .qiita-note > :last-child) {
+    margin-bottom: 0;
+  }
   :global(.prose figure) {
     margin: 24px 0;
   }
@@ -469,11 +594,46 @@ const description = entry.seo.description || excerpt(entry);
     border-radius: 2px;
   }
   :global(.prose pre) {
+    position: relative;
     background: #082842;
     color: #eff8f8;
     border-radius: 4px;
     padding: 18px 22px;
     overflow: auto;
+  }
+  :global(.prose pre[data-code-title]) {
+    padding-top: 52px;
+  }
+  :global(.prose pre[data-code-title]:before) {
+    content: attr(data-code-title);
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    color: #c8dde7;
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 0.76rem;
+  }
+  :global(.prose .qiita-code-title) {
+    min-height: 36px;
+    margin: 24px 0 0;
+    padding: 7px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px 4px 0 0;
+    background: #123852;
+    color: #c8dde7;
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 0.76rem;
+  }
+  :global(.prose .qiita-code-title + pre) {
+    margin-top: 0;
+    border-radius: 0 0 4px 4px;
   }
   :global(.prose pre code) {
     background: none;
@@ -503,6 +663,65 @@ const description = entry.seo.description || excerpt(entry);
   }
   :global(.prose th) {
     background: #eaf3f2;
+  }
+  :global(.prose .contains-task-list) {
+    padding-left: 0;
+    list-style: none;
+  }
+  :global(.prose .task-list-item) {
+    padding-left: 28px;
+  }
+  :global(.prose .task-list-item:before) {
+    display: none;
+  }
+  :global(.prose .task-list-item input) {
+    position: absolute;
+    left: 0;
+    top: 0.48em;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--teal);
+  }
+  :global(.prose .footnotes) {
+    margin-top: 48px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  :global(.prose .footnotes ol) {
+    margin: 0;
+  }
+  :global(.prose [data-footnote-ref]) {
+    margin-inline: 2px;
+    font-size: 0.78em;
+    font-weight: 800;
+    text-decoration: none;
+  }
+  :global(.prose [data-footnote-backref]) {
+    margin-left: 5px;
+    text-decoration: none;
+  }
+  :global(.prose .mermaid-diagram) {
+    margin: 28px 0;
+    padding: 20px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    background: var(--white);
+  }
+  :global(.prose .mermaid-diagram svg) {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+  }
+  :global(.prose pre.mermaid-error:after) {
+    content: "Mermaid図を表示できませんでした";
+    display: block;
+    margin-top: 12px;
+    color: #ffc5c5;
+    font-size: 0.78rem;
   }
   @media (max-width: 600px) {
     .article-page h1 {

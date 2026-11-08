@@ -1,0 +1,578 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+export const prerender = true;
+---
+
+<BaseLayout
+  title="記事プレビュー | 受験物理 Set Up"
+  description="CMS記事の確認用プレビューです。"
+  noindex={true}
+  analytics={false}
+  robots="noindex,nofollow,noarchive,nosnippet"
+>
+  <div class="preview-bar" role="status" aria-live="polite">
+    <div class="container preview-bar-inner">
+      <div>
+        <span class="preview-dot" aria-hidden="true"></span>
+        <strong>プレビューモード</strong>
+        <span data-preview-status>CMSから内容を読み込んでいます</span>
+      </div>
+      <button type="button" data-preview-reload>
+        再読み込み
+      </button>
+    </div>
+  </div>
+
+  <div class="container preview-shell">
+    <section
+      class="preview-loading"
+      data-preview-loading
+      aria-label="読み込み中"
+    >
+      <div class="skeleton skeleton-label"></div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-title short"></div>
+      <div class="skeleton skeleton-meta"></div>
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line medium"></div>
+    </section>
+
+    <section class="preview-error" data-preview-error hidden>
+      <div class="error-mark" aria-hidden="true">
+        !
+      </div>
+      <div>
+        <h1>プレビューを表示できません</h1>
+        <p data-preview-error-message>
+          URLの有効期限が切れている可能性があります。
+        </p>
+        <p>CMSの記事編集画面から、もう一度プレビューを開いてください。</p>
+      </div>
+    </section>
+
+    <article class="preview-article" data-preview-article hidden>
+      <header>
+        <div class="article-meta" data-preview-category hidden></div>
+        <h1 data-preview-title></h1>
+        <p class="lead" data-preview-description hidden></p>
+        <div class="article-dates">
+          プレビュー生成日時 <time data-preview-date></time>
+        </div>
+        <img class="article-hero" data-preview-image hidden alt="" />
+      </header>
+      <nav
+        class="preview-toc"
+        data-preview-toc
+        hidden
+        aria-labelledby="preview-toc-title"
+      >
+        <h2 id="preview-toc-title">この記事の目次</h2>
+        <ol data-preview-toc-list></ol>
+      </nav>
+      <div class="prose" data-preview-body></div>
+    </article>
+  </div>
+</BaseLayout>
+
+<script>
+  import { renderMarkdownInto } from "../../lib/client-markdown";
+
+  type PreviewContent = {
+    title: string;
+    description: string | null;
+    bodyMarkdown: string;
+    updatedAt: string;
+    category: { name: string; slug: string } | null;
+    featuredImage: { url: string; alt: string | null } | null;
+  };
+  type PreviewResponse = {
+    data: PreviewContent;
+    meta?: { preview?: boolean; expiresAt?: number };
+  };
+
+  const loading = document.querySelector<HTMLElement>("[data-preview-loading]");
+  const errorPanel = document.querySelector<HTMLElement>(
+    "[data-preview-error]",
+  );
+  const errorMessage = document.querySelector<HTMLElement>(
+    "[data-preview-error-message]",
+  );
+  const article = document.querySelector<HTMLElement>("[data-preview-article]");
+  const status = document.querySelector<HTMLElement>("[data-preview-status]");
+  const reload = document.querySelector<HTMLButtonElement>(
+    "[data-preview-reload]",
+  );
+
+  const showError = (message: string) => {
+    if (loading) loading.hidden = true;
+    if (article) article.hidden = true;
+    if (errorPanel) errorPanel.hidden = false;
+    if (errorMessage) errorMessage.textContent = message;
+    if (status) status.textContent = "読み込みに失敗しました";
+  };
+
+  const loadPreview = async () => {
+    const source =
+      new URLSearchParams(location.search).get("cms_preview_url") || "";
+    let sourceUrl: URL;
+    try {
+      sourceUrl = new URL(source);
+    } catch {
+      showError("プレビューURLが正しくありません。");
+      return;
+    }
+    const localDevelopment = ["localhost", "127.0.0.1"].includes(
+      sourceUrl.hostname,
+    );
+    if (
+      sourceUrl.protocol !== "https:" &&
+      !(localDevelopment && sourceUrl.protocol === "http:")
+    ) {
+      showError("安全でないプレビューURLは読み込めません。");
+      return;
+    }
+
+    if (loading) loading.hidden = false;
+    if (errorPanel) errorPanel.hidden = true;
+    if (article) article.hidden = true;
+    if (status) status.textContent = "CMSから内容を読み込んでいます";
+    if (reload) reload.disabled = true;
+
+    try {
+      const response = await fetch(sourceUrl, {
+        method: "GET",
+        credentials: "omit",
+        referrerPolicy: "no-referrer",
+        headers: { Accept: "application/json" },
+      });
+      const payload = await response.json().catch(() => null);
+      if ([403, 404, 410, 419].includes(response.status)) {
+        throw new Error("プレビューURLの有効期限が切れています。");
+      }
+      if (!response.ok || !payload?.data) {
+        throw new Error("CMSからプレビュー内容を取得できませんでした。");
+      }
+
+      const previewPayload = payload as PreviewResponse;
+      const content = previewPayload.data;
+      const title = document.querySelector<HTMLElement>("[data-preview-title]");
+      const description = document.querySelector<HTMLElement>(
+        "[data-preview-description]",
+      );
+      const category = document.querySelector<HTMLElement>(
+        "[data-preview-category]",
+      );
+      const date = document.querySelector<HTMLTimeElement>(
+        "[data-preview-date]",
+      );
+      const image = document.querySelector<HTMLImageElement>(
+        "[data-preview-image]",
+      );
+      const body = document.querySelector<HTMLElement>("[data-preview-body]");
+
+      if (!title || !body)
+        throw new Error("プレビュー画面を初期化できませんでした。");
+      title.textContent = content.title;
+      document.title = `${content.title}（プレビュー） | 受験物理 Set Up`;
+      if (description) {
+        description.textContent = content.description || "";
+        description.hidden = !content.description;
+      }
+      if (category) {
+        category.textContent = content.category?.name || "";
+        category.hidden = !content.category;
+      }
+      if (date) {
+        const updated = new Date(content.updatedAt);
+        date.dateTime = content.updatedAt;
+        date.textContent = Number.isNaN(updated.valueOf())
+          ? content.updatedAt
+          : new Intl.DateTimeFormat("ja-JP", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "Asia/Tokyo",
+            }).format(updated);
+      }
+      if (image && content.featuredImage) {
+        image.src = content.featuredImage.url;
+        image.alt = content.featuredImage.alt || content.title;
+        image.hidden = false;
+      } else if (image) {
+        image.hidden = true;
+      }
+
+      await renderMarkdownInto(content.bodyMarkdown || "", body);
+
+      const headings = [...body.querySelectorAll<HTMLHeadingElement>("h2, h3")];
+      const toc = document.querySelector<HTMLElement>("[data-preview-toc]");
+      const tocList = document.querySelector<HTMLOListElement>(
+        "[data-preview-toc-list]",
+      );
+      headings.forEach((heading, index) => {
+        heading.id = `preview-heading-${index + 1}`;
+      });
+      if (toc && tocList && headings.length) {
+        tocList.replaceChildren(
+          ...headings.map((heading) => {
+            const item = document.createElement("li");
+            if (heading.tagName === "H3") item.className = "toc-child";
+            const link = document.createElement("a");
+            link.href = `#${heading.id}`;
+            link.textContent = heading.textContent || "";
+            item.append(link);
+            return item;
+          }),
+        );
+        toc.hidden = false;
+      }
+
+      if (loading) loading.hidden = true;
+      if (article) article.hidden = false;
+      if (status) {
+        const expiresAt = previewPayload.meta?.expiresAt;
+        status.textContent = expiresAt
+          ? `下書き内容を表示中（${new Intl.DateTimeFormat("ja-JP", {
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: "Asia/Tokyo",
+            }).format(new Date(expiresAt * 1000))}まで有効）`
+          : "下書き内容を表示中";
+      }
+    } catch (error) {
+      showError(
+        error instanceof Error
+          ? error.message
+          : "プレビューを取得できませんでした。",
+      );
+    } finally {
+      if (reload) reload.disabled = false;
+    }
+  };
+
+  reload?.addEventListener("click", () => void loadPreview());
+  void loadPreview();
+</script>
+
+<style>
+  .preview-bar {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    border-bottom: 1px solid #28506a;
+    background: #102a43;
+    color: #fff;
+  }
+  .preview-bar-inner {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    font-size: 0.78rem;
+  }
+  .preview-bar-inner > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .preview-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #69c4b9;
+  }
+  .preview-bar button {
+    border: 1px solid #7693a5;
+    border-radius: 3px;
+    padding: 5px 12px;
+    background: transparent;
+    color: #fff;
+    font-size: 0.76rem;
+    cursor: pointer;
+  }
+  .preview-bar button:active {
+    transform: scale(0.98);
+  }
+  .preview-shell {
+    max-width: 900px;
+    min-height: 70dvh;
+    padding-block: 48px 90px;
+  }
+  .preview-loading,
+  .preview-article {
+    max-width: 70ch;
+    margin-inline: auto;
+  }
+  .skeleton {
+    background: #e5e9e7;
+    animation: preview-pulse 1.4s ease-in-out infinite alternate;
+  }
+  .skeleton-label {
+    width: 90px;
+    height: 15px;
+    margin-bottom: 18px;
+  }
+  .skeleton-title {
+    width: 90%;
+    height: 43px;
+    margin-bottom: 12px;
+  }
+  .skeleton-title.short {
+    width: 58%;
+  }
+  .skeleton-meta {
+    width: 190px;
+    height: 14px;
+    margin: 22px 0;
+  }
+  .skeleton-image {
+    width: 100%;
+    aspect-ratio: 3/2;
+    margin-bottom: 30px;
+  }
+  .skeleton-line {
+    width: 100%;
+    height: 14px;
+    margin-bottom: 12px;
+  }
+  .skeleton-line.medium {
+    width: 72%;
+  }
+  @keyframes preview-pulse {
+    to {
+      opacity: 0.5;
+    }
+  }
+  .preview-error {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 22px;
+    max-width: 680px;
+    margin: 70px auto;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .preview-error[hidden] {
+    display: none;
+  }
+  .error-mark {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 2px solid #b84a4a;
+    border-radius: 50%;
+    color: #b84a4a;
+    font-weight: 800;
+  }
+  .preview-error h1 {
+    margin: 0 0 10px;
+    font-size: 1.55rem;
+  }
+  .preview-error p {
+    margin: 5px 0;
+    color: var(--muted);
+  }
+  .preview-article h1 {
+    margin: 6px 0 8px;
+    font-size: 2.7rem;
+    line-height: 1.3;
+  }
+  .lead {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+  }
+  .article-dates {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  .article-hero {
+    aspect-ratio: 3/2;
+    margin: 22px 0 24px;
+    border-radius: 5px;
+    object-fit: cover;
+  }
+  .preview-toc {
+    margin: 34px 0 46px;
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    background: rgba(255, 253, 249, 0.72);
+  }
+  .preview-toc h2 {
+    margin: 0 0 12px;
+    font-size: 1.12rem;
+  }
+  .preview-toc ol {
+    margin: 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+  .preview-toc li + li {
+    margin-top: 7px;
+  }
+  .preview-toc .toc-child {
+    padding-left: 22px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .prose {
+    max-width: 70ch;
+    font-size: 1rem;
+  }
+  .prose :global(h2) {
+    margin: 58px 0 18px;
+    font-size: 2rem;
+    line-height: 1.35;
+    letter-spacing: -0.025em;
+  }
+  .prose :global(h2:after) {
+    content: "";
+    display: block;
+    width: 52px;
+    height: 3px;
+    margin-top: 9px;
+    background: var(--teal);
+  }
+  .prose :global(h3) {
+    margin: 42px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.35rem;
+  }
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(ol),
+  .prose :global(blockquote) {
+    margin-block: 16px;
+  }
+  .prose :global(blockquote) {
+    margin-inline: 0;
+    padding: 8px 20px;
+    border-left: 3px solid var(--teal);
+    background: #eaf3f2;
+  }
+  .prose :global(.qiita-note) {
+    padding: 18px 20px;
+    border: 1px solid #b7d7d7;
+    border-left: 4px solid var(--teal);
+    background: #edf7f6;
+  }
+  .prose :global(.qiita-note-warn) {
+    border-color: #edc38e;
+    border-left-color: var(--orange);
+    background: #fff5e8;
+  }
+  .prose :global(.qiita-note-alert) {
+    border-color: #e3b2b2;
+    border-left-color: #b84a4a;
+    background: #fff0f0;
+  }
+  .prose :global(code) {
+    padding: 0.14em 0.38em;
+    border-radius: 2px;
+    background: #dfeff1;
+    font-family: "IBM Plex Mono", Consolas, monospace;
+  }
+  .prose :global(pre) {
+    position: relative;
+    overflow: auto;
+    padding: 18px 22px;
+    border-radius: 4px;
+    background: #082842;
+    color: #eff8f8;
+  }
+  .prose :global(pre[data-code-title]) {
+    padding-top: 52px;
+  }
+  .prose :global(pre[data-code-title]:before) {
+    content: attr(data-code-title);
+    position: absolute;
+    inset: 0 0 auto;
+    min-height: 34px;
+    padding: 6px 16px;
+    border-bottom: 1px solid #ffffff26;
+    background: #ffffff12;
+    color: #c8dde7;
+    font-size: 0.76rem;
+  }
+  .prose :global(pre code) {
+    padding: 0;
+    background: none;
+    color: inherit;
+  }
+  .prose :global(img) {
+    height: auto;
+    margin: 24px 0;
+    border-radius: 5px;
+  }
+  .prose :global(a) {
+    color: var(--teal);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prose :global(table) {
+    width: 100%;
+    margin: 24px 0;
+    border-collapse: collapse;
+  }
+  .prose :global(th),
+  .prose :global(td) {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  .prose :global(th) {
+    background: #eaf3f2;
+  }
+  .prose :global(.mermaid-diagram) {
+    margin: 28px 0;
+    padding: 20px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    background: var(--white);
+  }
+  .prose :global(.mermaid-diagram svg) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+  }
+  .prose :global(.footnotes) {
+    margin-top: 48px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  @media (max-width: 600px) {
+    .preview-bar-inner {
+      align-items: flex-start;
+      padding-block: 9px;
+    }
+    .preview-bar-inner > div {
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+    }
+    .preview-dot {
+      margin-top: 7px;
+    }
+    .preview-shell {
+      padding-block: 30px 70px;
+    }
+    .preview-article h1 {
+      font-size: 2rem;
+    }
+    .prose :global(h2) {
+      font-size: 1.6rem;
+    }
+  }
+  @media (max-width: 900px) {
+    .preview-bar {
+      top: 68px;
+    }
+  }
+</style>

@@ -10,6 +10,8 @@ interface Props {
   canonical?: string | null;
   image?: string;
   noindex?: boolean;
+  analytics?: boolean;
+  robots?: string | null;
 }
 
 const {
@@ -18,6 +20,8 @@ const {
   canonical,
   image,
   noindex = false,
+  analytics = true,
+  robots = null,
 } = Astro.props;
 
 const canonicalUrl =
@@ -27,9 +31,13 @@ const canonicalUrl =
 const ga4MeasurementId = import.meta.env.PUBLIC_GA4_MEASUREMENT_ID?.trim();
 const adsenseClientId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_CLIENT_ID?.trim();
 const enableGa4 =
-  import.meta.env.PROD && /^G-[A-Z0-9]+$/i.test(ga4MeasurementId || "");
+  analytics &&
+  import.meta.env.PROD &&
+  /^G-[A-Z0-9]+$/i.test(ga4MeasurementId || "");
 const enableAdsense =
-  import.meta.env.PROD && /^ca-pub-\d+$/i.test(adsenseClientId || "");
+  analytics &&
+  import.meta.env.PROD &&
+  /^ca-pub-\d+$/i.test(adsenseClientId || "");
 ---
 
 <!doctype html>
@@ -38,7 +46,9 @@ const enableAdsense =
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex,follow" />}
+    {(robots || noindex) && (
+      <meta name="robots" content={robots || "noindex,follow"} />
+    )}
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />

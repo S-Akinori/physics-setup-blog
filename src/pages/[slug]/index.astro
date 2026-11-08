@@ -85,7 +85,8 @@ const description = entry.seo.description || excerpt(entry);
                 </div>
               </form>
               <p class="protected-help">
-                パスワードは保存されず、この認証処理にのみ使用します。
+                認証後7日間は、この端末でパスワードの再入力が不要です。
+                パスワードはブラウザには保存されません。
               </p>
             </div>
             <nav
@@ -126,12 +127,6 @@ const description = entry.seo.description || excerpt(entry);
             </header>
             <TableOfContents headings={rendered.metadata.headings} />
             <div class="prose" set:html={rendered.code} />
-            {entry.author && (
-              <div class="author-box">
-                <strong>この記事を書いた人　{entry.author.name}</strong>
-                <p>大学受験物理を、基礎からわかりやすく解説しています。</p>
-              </div>
-            )}
             {entry.commentsEnabled &&
               cmsApiBase &&
               !entry.passwordProtected && (
@@ -158,92 +153,20 @@ const description = entry.seo.description || excerpt(entry);
 </BaseLayout>
 
 <script>
-  import DOMPurify from "dompurify";
-  import { Marked } from "marked";
-  import markedFootnote from "marked-footnote";
-  import markedKatex from "marked-katex-extension";
-  import { normalizeQiitaMarkdown } from "../../lib/qiita-markdown";
-
-  const protectedMarkdown = new Marked().use(
-    { gfm: true },
-    markedFootnote({
-      description: "注釈",
-      refMarkers: true,
-    }),
-    markedKatex({ throwOnError: false, nonStandard: true }),
-  );
-
-  const prepareQiitaMarkup = (container: HTMLElement) => {
-    container.querySelectorAll("blockquote").forEach((quote) => {
-      const marker = quote.firstElementChild?.textContent
-        ?.trim()
-        .match(/^\[!QIITA-NOTE:(info|warn|alert)\]$/);
-      if (!marker) return;
-      quote.firstElementChild?.remove();
-      quote.classList.add("qiita-note", `qiita-note-${marker[1]}`);
-      quote.setAttribute("role", "note");
-    });
-
-    container.querySelectorAll("pre > code").forEach((code) => {
-      const languageClass = [...code.classList].find((className) =>
-        className.startsWith("language-"),
-      );
-      if (!languageClass) return;
-      const languageInfo = languageClass.slice("language-".length);
-      const [language, ...titleParts] = languageInfo.split(":");
-      const title = titleParts.join(":").trim();
-      code.classList.remove(languageClass);
-      code.classList.add(`language-${language}`);
-      if (title) code.parentElement?.setAttribute("data-code-title", title);
-      if (language.toLowerCase() === "mermaid") {
-        code.parentElement?.setAttribute("data-mermaid", "true");
-      }
-    });
-  };
-
-  const renderMermaidBlocks = async (container: HTMLElement) => {
-    const blocks = [
-      ...container.querySelectorAll<HTMLElement>(
-        'pre[data-mermaid="true"], pre[data-language="mermaid"]',
-      ),
-    ];
-    if (!blocks.length) return;
-
-    const { default: mermaid } = await import("mermaid");
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: "strict",
-      theme: "neutral",
-    });
-
-    for (const [index, block] of blocks.entries()) {
-      const source = block.textContent || "";
-      const wrapper = document.createElement("div");
-      wrapper.className = "mermaid-diagram";
-      try {
-        const id = `mermaid-${Date.now()}-${index}`;
-        const { svg, bindFunctions } = await mermaid.render(id, source);
-        wrapper.innerHTML = DOMPurify.sanitize(svg, {
-          USE_PROFILES: { svg: true, svgFilters: true },
-        });
-        block.replaceWith(wrapper);
-        bindFunctions?.(wrapper);
-      } catch {
-        block.classList.add("mermaid-error");
-      }
-    }
-  };
+  import {
+    enhanceRenderedMarkdown,
+    renderMarkdownInto,
+  } from "../../lib/client-markdown";
 
   document.querySelectorAll<HTMLElement>(".prose").forEach((container) => {
-    prepareQiitaMarkup(container);
-    void renderMermaidBlocks(container);
+    void enhanceRenderedMarkdown(container);
   });
 
   const passwordForm = document.querySelector<HTMLFormElement>(
     "[data-password-form]",
   );
-  passwordForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  const loadProtectedContent = async (password?: FormDataEntryValue) => {
+    if (!passwordForm) return;
     const gate = document.querySelector<HTMLElement>("[data-password-gate]");
     const message = document.querySelector<HTMLElement>(
       "[data-password-message]",
@@ -254,10 +177,10 @@ const description = entry.seo.description || excerpt(entry);
       "[data-protected-toc-list]",
     );
     const submit = passwordForm.querySelector<HTMLButtonElement>("button");
-    const password = new FormData(passwordForm).get("password");
-
-    if (!message || !body || !password) return;
-    message.textContent = "確認しています…";
+    if (!message || !body) return;
+    message.textContent = password
+      ? "確認しています…"
+      : "認証状態を確認しています…";
     if (submit) submit.disabled = true;
 
     try {
@@ -271,10 +194,15 @@ const description = entry.seo.description || excerpt(entry);
         body: JSON.stringify({
           type: passwordForm.dataset.contentType,
           slug: passwordForm.dataset.contentSlug,
-          password,
+          ...(password ? { password } : {}),
         }),
       });
       const payload = await response.json().catch(() => null);
+      if (response.status === 401 && !password) {
+        message.textContent = "このページはパスワードで保護されています。";
+        if (submit) submit.disabled = false;
+        return;
+      }
       if (response.status === 401)
         throw new Error("パスワードが正しくありません。");
       if (response.status === 429)
@@ -285,14 +213,7 @@ const description = entry.seo.description || excerpt(entry);
         throw new Error("限定公開ページを取得できませんでした。");
       }
 
-      const rendered = await protectedMarkdown.parse(
-        normalizeQiitaMarkdown(payload.data.bodyMarkdown),
-      );
-      body.innerHTML = DOMPurify.sanitize(rendered, {
-        USE_PROFILES: { html: true },
-      });
-      prepareQiitaMarkup(body);
-      await renderMermaidBlocks(body);
+      await renderMarkdownInto(payload.data.bodyMarkdown, body);
 
       const headings = [...body.querySelectorAll<HTMLHeadingElement>("h2, h3")];
       headings.forEach((heading, index) => {
@@ -318,7 +239,15 @@ const description = entry.seo.description || excerpt(entry);
         error instanceof Error ? error.message : "認証できませんでした。";
       if (submit) submit.disabled = false;
     }
+  };
+
+  passwordForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const password = new FormData(passwordForm).get("password");
+    if (password) void loadProtectedContent(password);
   });
+
+  if (passwordForm) void loadProtectedContent();
 
   const backToTop = document.querySelector<HTMLElement>(".back-to-article-top");
   const updateBackToTop = () => {

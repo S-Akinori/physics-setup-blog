@@ -12,7 +12,13 @@ import {
 export const prerender = true;
 
 const [articles, taxonomies] = await Promise.all([getPosts(), getTaxonomies()]);
-const recommended = articles.slice(0, 3);
+const recommended = articles
+  .filter((article) => article.category?.slug === "recommendation")
+  .sort(
+    (a, b) =>
+      new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
+  )
+  .slice(0, 3);
 const news = articles
   .filter(
     (article) =>
@@ -58,34 +64,36 @@ const news = articles
       </section>
     )}
 
-    <section class="section">
-      <h2 class="rule-title">おすすめ記事</h2>
-      <div class="recommended-grid">
-        {recommended.map((article) => (
-          <article class="feature-card">
-            <a href={contentUrl(article)}>
-              <img
-                src={article.featuredImage?.url || "/no-image.webp"}
-                alt={
-                  article.featuredImage?.alt ||
-                  (article.featuredImage ? "" : "No Image")
-                }
-                loading="lazy"
-              />
-            </a>
-            {article.category && (
-              <div class="article-meta">{article.category.name}</div>
-            )}
-            <h3>
-              <a href={contentUrl(article)}>{article.title}</a>
-            </h3>
-            <time class="date" datetime={article.publishedAt}>
-              {formatDate(article.publishedAt)}
-            </time>
-          </article>
-        ))}
-      </div>
-    </section>
+    {recommended.length > 0 && (
+      <section class="section">
+        <h2 class="rule-title">おすすめ記事</h2>
+        <div class="recommended-grid">
+          {recommended.map((article) => (
+            <article class="feature-card">
+              <a href={contentUrl(article)}>
+                <img
+                  src={article.featuredImage?.url || "/no-image.webp"}
+                  alt={
+                    article.featuredImage?.alt ||
+                    (article.featuredImage ? "" : "No Image")
+                  }
+                  loading="lazy"
+                />
+              </a>
+              {article.category && (
+                <div class="article-meta">{article.category.name}</div>
+              )}
+              <h3>
+                <a href={contentUrl(article)}>{article.title}</a>
+              </h3>
+              <time class="date" datetime={article.publishedAt}>
+                {formatDate(article.publishedAt)}
+              </time>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
 
     <section class="section content-grid" id="latest">
       <div>

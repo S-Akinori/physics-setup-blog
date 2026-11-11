@@ -13,7 +13,9 @@ export const prerender = true;
 
 const [articles, taxonomies] = await Promise.all([getPosts(), getTaxonomies()]);
 const recommended = articles
-  .filter((article) => article.category?.slug === "recommendation")
+  .filter((article) =>
+    article.tags.some((tag) => tag.name.trim() === "おすすめ"),
+  )
   .sort(
     (a, b) =>
       new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),

@@ -12,7 +12,11 @@ import {
 export const prerender = true;
 
 const [articles, taxonomies] = await Promise.all([getPosts(), getTaxonomies()]);
-const recommended = articles
+const isNews = (article: (typeof articles)[number]) =>
+  article.category?.slug === "news" ||
+  article.category?.name.trim() === "ニュース";
+const regularArticles = articles.filter((article) => !isNews(article));
+const recommended = regularArticles
   .filter((article) =>
     article.tags.some((tag) => tag.name.trim() === "おすすめ"),
   )
@@ -22,11 +26,7 @@ const recommended = articles
   )
   .slice(0, 3);
 const news = articles
-  .filter(
-    (article) =>
-      article.category?.slug === "news" ||
-      article.category?.name === "ニュース",
-  )
+  .filter(isNews)
   .sort(
     (a, b) =>
       new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
@@ -101,7 +101,7 @@ const news = articles
       <div>
         <h2 class="rule-title">新着記事</h2>
         <div class="article-grid">
-          {articles.slice(0, 10).map((article) => (
+          {regularArticles.slice(0, 10).map((article) => (
             <article class="compact-article">
               <a href={contentUrl(article)}>
                 <img
@@ -129,7 +129,7 @@ const news = articles
           ))}
         </div>
       </div>
-      <Sidebar articles={articles} categories={taxonomies.categories} />
+      <Sidebar articles={regularArticles} categories={taxonomies.categories} />
     </section>
   </div>
 </BaseLayout>

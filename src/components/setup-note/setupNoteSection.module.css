@@ -1,0 +1,82 @@
+.section {
+  position: relative;
+}
+
+.section h2 {
+  color: var(--lp-ink);
+  font-size: clamp(1.9rem, 3.8vw, 3.2rem);
+  line-height: 1.55;
+  letter-spacing: -0.035em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.section h3 {
+  margin: 4.5rem 0 1.5rem;
+  padding: 1.4rem 1.8rem 1.3rem;
+  border-top: 1px solid var(--lp-brown);
+  border-bottom: 1px solid var(--lp-brown);
+  color: var(--lp-ink);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.section p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.section strong {
+  background: linear-gradient(transparent 64%, rgba(211, 193, 116, 0.38) 64%);
+  color: #302d29;
+  font-weight: 700;
+}
+
+.section img {
+  width: auto;
+  max-width: 100%;
+  max-height: 42rem;
+  margin: 0 auto;
+  background: #fff;
+  object-fit: contain;
+}
+
+.section p:has(> img) {
+  position: relative;
+  margin: 4.5rem calc(50% - 43vw);
+  padding: 1.25rem;
+  box-shadow: 0 1.8rem 5rem rgba(82, 72, 61, 0.12);
+  text-align: center;
+}
+
+.section a {
+  color: var(--lp-accent);
+  font-weight: 700;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  transition: color 0.2s ease;
+}
+
+.section a:hover {
+  color: var(--lp-brown);
+}
+
+@media (max-width: 700px) {
+  .section h2 {
+    margin-top: 6.5rem;
+    font-size: 1.75rem;
+  }
+
+  .section h3 {
+    margin-top: 3.5rem;
+    padding-inline: 0.8rem;
+    font-size: 1.15rem;
+  }
+
+  .section p:has(> img) {
+    margin: 3.5rem -0.5rem;
+    padding: 0.6rem;
+  }
+}

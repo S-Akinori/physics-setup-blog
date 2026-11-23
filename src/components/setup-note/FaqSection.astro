@@ -1,0 +1,222 @@
+---
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-faq", sectionStyles.section]}
+  aria-label="よくあるご質問"
+>
+  <div class="section-inner">
+    <h2>よくあるご質問</h2>
+    <div class="faq-list">
+      <article class="faq-card">
+        <div class="faq-question">
+          <span class="faq-mark" aria-hidden="true">
+            Q
+          </span>
+          <h3>この教材の形式は？</h3>
+        </div>
+        <div class="faq-answer">
+          <span class="faq-mark" aria-hidden="true">
+            A
+          </span>
+          <div>
+            <p>テキストはpdf形式となっております。</p>
+            <p>
+              他のコンテンツは特設ページでまとめています。スマホ一つでどこでも見ることが可能です。完全オンライン制です。
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <article class="faq-card">
+        <div class="faq-question">
+          <span class="faq-mark" aria-hidden="true">
+            Q
+          </span>
+          <h3>まだ受験生ではないですが、問題ないですか？</h3>
+        </div>
+        <div class="faq-answer">
+          <span class="faq-mark" aria-hidden="true">
+            A
+          </span>
+          <p>
+            大丈夫です。1,2年生、浪人生でも可能です。ただ、内容が「受験生向け」となっておりますので、1,2年生では内容が難しいところがあります。
+          </p>
+        </div>
+      </article>
+
+      <article class="faq-card">
+        <div class="faq-question">
+          <span class="faq-mark" aria-hidden="true">
+            Q
+          </span>
+          <h3>返金保証はありますか？</h3>
+        </div>
+        <div class="faq-answer">
+          <span class="faq-mark" aria-hidden="true">
+            A
+          </span>
+          <p>
+            申し訳ありませんが、返金はいたしません。「返金できるから」という理由で購入されますと、「やらなくても大丈夫」という気持ちが芽生えてしまいます。本気で勉強をしにきていただきたいと思っております。
+          </p>
+        </div>
+      </article>
+
+      <article class="faq-card">
+        <div class="faq-question">
+          <span class="faq-mark" aria-hidden="true">
+            Q
+          </span>
+          <h3>本当に結果が出るのでしょうか？</h3>
+        </div>
+        <div class="faq-answer">
+          <span class="faq-mark" aria-hidden="true">
+            A
+          </span>
+          <p>
+            私は本気でサポートしますが、サポートを全く使わなかったり、教材の内容を無視したりしたり、本気で取り組まなかったりすれば結果が出る保証はできません。ですが、内容を着実にこなした方は必ず結果は出ます。
+          </p>
+        </div>
+      </article>
+    </div>
+
+    <p class="legal-link">
+      <a href="https://akiworking.stores.jp/tokushoho">
+        特定商取引法に基づく記述
+      </a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .lp-faq {
+    margin-block: 9rem 4rem;
+  }
+
+  .faq-list {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .faq-card {
+    overflow: hidden;
+    border: 1px solid rgba(103, 93, 82, 0.18);
+    background: rgba(255, 254, 249, 0.88);
+    box-shadow: 0 1.25rem 3.5rem rgba(82, 72, 61, 0.08);
+    transition:
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s ease;
+  }
+
+  .faq-card:hover {
+    box-shadow: 0 1.5rem 4rem rgba(82, 72, 61, 0.12);
+    transform: translateY(-3px);
+  }
+
+  .faq-question,
+  .faq-answer {
+    display: grid;
+    grid-template-columns: 2.8rem minmax(0, 1fr);
+    gap: 1.1rem;
+    align-items: start;
+  }
+
+  .faq-question {
+    padding: 1.6rem 1.8rem;
+    background: var(--lp-sage);
+  }
+
+  .faq-answer {
+    padding: 1.7rem 1.8rem 1.9rem;
+  }
+
+  .faq-mark {
+    display: grid;
+    width: 2.4rem;
+    height: 2.4rem;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    color: var(--lp-accent);
+    font-family: "Noto Sans JP", "Yu Gothic", sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .faq-answer .faq-mark {
+    border-color: var(--lp-brown);
+    color: var(--lp-brown);
+  }
+
+  .lp-faq .faq-question h3 {
+    margin: 0;
+    padding: 0.2rem 0 0;
+    border: 0;
+    color: var(--lp-ink);
+    font-size: clamp(1.08rem, 2.2vw, 1.28rem);
+    font-weight: 700;
+    line-height: 1.7;
+    text-align: left;
+  }
+
+  .faq-answer p {
+    margin: 0;
+  }
+
+  .faq-answer div p + p {
+    margin-top: 0.75rem;
+  }
+
+  .legal-link {
+    margin: 7rem auto 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--lp-line);
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    .lp-faq {
+      margin-block: 6rem 3rem;
+    }
+
+    .faq-list {
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+
+    .faq-question,
+    .faq-answer {
+      grid-template-columns: 2.2rem minmax(0, 1fr);
+      gap: 0.75rem;
+      padding: 1.25rem 1rem;
+    }
+
+    .faq-answer {
+      padding-bottom: 1.4rem;
+    }
+
+    .faq-mark {
+      width: 2rem;
+      height: 2rem;
+      font-size: 0.88rem;
+    }
+
+    .lp-faq .faq-question h3 {
+      padding-top: 0;
+      font-size: 1.02rem;
+    }
+
+    .legal-link {
+      margin-top: 4.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-card {
+      transition: none;
+    }
+  }
+</style>

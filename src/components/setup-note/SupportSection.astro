@@ -1,0 +1,34 @@
+---
+import BonusList from "./BonusList.astro";
+
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-support", sectionStyles.section]}
+  aria-label="授業や参考書では学べないノウハウが学べます"
+>
+  <div class="section-inner">
+    <h2>授業や参考書では学べないノウハウが学べます</h2>
+    <p>僕は学校の授業や参考書のないように非常に疑問を持っていました。</p>
+    <p>「なんでこんなにわかりにくいの？」</p>
+    <p>「このノウハウ本当に使えるの？」</p>
+    <p>学校や参考書では学べないけど大事なことっていっぱいあるんです。</p>
+    <p>
+      <strong>僕はそれをこのオンライン塾ですべて明かそうと思います！</strong>
+    </p>
+    <p>1日1分野こなせば2週間で終わらせることができます。</p>
+    <p>理系のあなたなら、数学や英語に時間をかけたいですよね。</p>
+    <p>
+      物理に時間をかけたくないというのがあると思いますので、これはうれしい限りですよね。
+    </p>
+    <h2>あなたをサポートする特典も！！</h2>
+    <p>
+      さらに、この力学Set
+      Up塾にご参加いただいたあなただけにさらなる合格に２歩、３歩も近づける
+      <strong>特典を4つ</strong>もご用意しております。
+    </p>
+    <BonusList />
+    <p>特典を有効活用することで、ぐんぐん力を伸ばすことができるのです！</p>
+  </div>
+</section>

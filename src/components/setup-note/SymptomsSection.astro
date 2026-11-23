@@ -1,0 +1,44 @@
+---
+import sectionStyles from "./setupNoteSection.module.css";
+import BulletList from "./BulletList.astro";
+---
+
+<section
+  class:list={["lp-section", "lp-symptoms", sectionStyles.section]}
+  aria-label="いくつの症状が当てはまりますか"
+>
+  <div class="section-inner">
+    <h2>いくつの症状が当てはまりますか？</h2>
+    <BulletList variant="question" label="当てはまる症状">
+      <li>
+        <strong>どの公式を使えば良いか分からない</strong>
+      </li>
+      <li>
+        <strong>模試になった途端、問題が解けなくなる</strong>
+      </li>
+      <li>
+        <strong>物理をセンスだと思っている</strong>
+      </li>
+      <li>
+        <strong>問題へのアプローチがわからない</strong>
+      </li>
+      <li>
+        <strong>問題集を1,2周しても結果がでない</strong>
+      </li>
+      <li>
+        <strong>量をこなせば成績が伸びると思っている</strong>
+      </li>
+      <li>
+        <strong>問題集の解説が理解できない</strong>
+      </li>
+    </BulletList>
+    <p>
+      もし、どれか1つでも当てはまっていたら危険です。 これは
+      <strong>不合格になる受験生の特徴だからです。</strong>
+    </p>
+    <p>
+      しかし、そんな症状は正しい勉強法を身に付ければすべて治すことができます。
+    </p>
+    <p>その究極のメソッドが学べるプログラムが・・・ setupノートです！！</p>
+  </div>
+</section>

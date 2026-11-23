@@ -1,0 +1,89 @@
+---
+import CtaButton from "./CtaButton.astro";
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-pricing", sectionStyles.section]}
+  aria-label="気になるお値段は"
+>
+  <div class="section-inner">
+    <h2>気になるお値段は？？</h2>
+    <p>もちろん、お金はいただきます。</p>
+    <p>
+      無料で配ってしまうと、誰でも手に入れることができてしまって、全く勉強しない人にも手に渡ってしまいます。
+    </p>
+    <p>そういうのは嫌いです。</p>
+    <p>今回の教材はほんとにボリュームがあり、内容も濃いです。</p>
+    <p>さらに8つの特典であなたを完全にフォローしていきます。</p>
+    <p>これを完璧に使いこなせば、あなたは必ず成果をだせます。</p>
+    <p>なので<span style="font-size: 2rem;">14800円</span>で販売しようと思います。</p>
+    <h2>なるべく多くの人に夢をかなえてほしい</h2>
+    <p>しかし、僕は思いました。</p>
+    <p>
+      <strong>
+        やはり、多くの人に受験をクリアしてもらって、夢をかなえてほしい。
+      </strong>
+    </p>
+    <p>受験生のあなたにあまり負担を掛けたくありません。</p>
+    <p>また、僕のように無駄な時間を過ごしてほしくないのです。</p>
+    <p>そんなの僕だけで十分です。</p>
+    <p>できれば、親に頼むことなく</p>
+    <p>自分のお小遣いでも買えるような値段にしたいです。</p>
+    <p>なので、こちらの教材、<span style="font-size: 2rem;">14800円⇒9800円</span></p>
+    <p>という価格で</p>
+    <p>お渡ししたいと思います。</p>
+    <h2>後悔だけはしてほしくない</h2>
+    <p>やっぱりお金で教材が買えないということで後悔はしてほしくありません。</p>
+    <p>あなたに合格をしてほしいです。</p>
+    <p>塾に行ったらこんな金額はありえません。</p>
+    <p>ここでしか手に入りません！これは断言します。</p>
+    <p>支払い方法ですが</p>
+    <p>高校生のあなたはクレジットカードを持っていないかもしれません。</p>
+    <p>ですがご安心ください。</p>
+    <p>
+      <strong>
+        コンビニ決済も可能ですので、クレジットカードを持っていなくても今あるお小遣いで手に入れることができます。
+      </strong>
+    </p>
+    <CtaButton
+      href="https://akiworking.stores.jp/items/690311b277e8d2377ac38254"
+      label="Set Upノートを購入する"
+    />
+</section>
+
+<style>
+  .lp-pricing {
+    position: relative;
+    margin-block: 9rem;
+    padding-block: 0.25rem 5rem;
+  }
+
+  .lp-pricing::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0 calc(50% - 50vw);
+    background: #f1e9dc;
+  }
+
+  h1 {
+    margin: 10rem calc(50% - 50vw) 4rem;
+    padding: 6rem max(2rem, calc((100vw - 780px) / 2));
+    background: var(--lp-sage-deep);
+    color: var(--lp-ink);
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    h1 {
+      margin-top: 7rem;
+      padding-block: 4.5rem;
+      font-size: 3rem;
+    }
+  }
+</style>

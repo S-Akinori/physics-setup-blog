@@ -1,0 +1,101 @@
+---
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-social-proof", sectionStyles.section]}
+  aria-label="既にあなたより先に行動していますあなたより先に行動している人がいます"
+>
+  <h2>既にあなたより先に行動し、結果を出している人がいます</h2>
+  <div class="section-inner">
+    <div>
+      <img src="/setup-note/message.png" alt="message.png" />
+    </div>
+    <div>
+      <img src="/setup-note/kansou3.png" alt="kansou3.png" />
+    </div>
+    <div>
+      <img src="/setup-note/TOP1.png" alt="TOP1.png" />
+    </div>
+    <div>
+      <img src="/setup-note/TOP2.png" alt="TOP2.png" />
+    </div>
+    <div>
+      <img src="/setup-note/kansou.png" alt="kansou.png" />
+    </div>
+  </div>
+  <p>
+    <strong>
+      テキストを使ったことで、物理自体が得意になったと思う方もいます。
+    </strong>
+  </p>
+</section>
+
+<style>
+  .lp-social-proof {
+    position: relative;
+    margin-block: 9rem;
+    padding-block: 0.25rem 5rem;
+  }
+
+  .lp-social-proof::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0 calc(50% - 50vw);
+    background: rgba(233, 239, 226, 0.72);
+  }
+
+  .section-inner {
+    display: grid;
+    place-items: center;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-inner > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    box-shadow: 0 1.8rem 5rem rgba(82, 72, 61, 0.12);
+  }
+
+  .section-inner > div:nth-of-type(odd) {
+    transform: rotate(-5deg);
+  }
+
+  .section-inner > div:nth-of-type(even) {
+    transform: rotate(5deg);
+  }
+
+  p {
+    text-align: center;
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 1024px) {
+    .section-inner > div:nth-of-type(odd),
+    .section-inner > div:nth-of-type(even) {
+      transform: rotate(0deg);
+    }
+  }
+
+  @media (max-width: 700px) {
+    .section-inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .section-inner > h2,
+    .section-inner > p:not(:has(img)) {
+      grid-column: auto;
+    }
+
+    .section-inner > p:has(img) {
+      width: 96%;
+      margin-inline: auto;
+    }
+  }
+</style>

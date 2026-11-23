@@ -1,0 +1,65 @@
+---
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-hero"]}
+  aria-label="受験物理setup-lp"
+>
+  <div class="section-inner">
+    <h2 class="lp-hero__title">
+      なぜ、11月までセンター模試40点だった人が、試験本番で100点を取り、早稲田大学に現役で合格できたのか？
+    </h2>
+  </div>
+</section>
+
+<style>
+  .lp-hero__title {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 50vh;
+    width: auto;
+    padding: 3rem 0;
+    margin-inline: calc(50% - 50vw);
+    color: #fff;
+    font-size: clamp(2.3rem, 4vw, 3rem);
+    line-height: 1.45;
+    letter-spacing: -0.045em;
+    text-shadow: 0 2px 20px rgba(35, 31, 26, 0.45);
+    text-wrap: balance;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(56, 50, 43, 0.9) 0%,
+        rgba(56, 50, 43, 0.58) 60%,
+        rgba(56, 50, 43, 0.08) 100%
+      ),
+      url("/setup-note/tree-99852_640-624x413.jpg") center 44% / cover no-repeat;
+  }
+
+  h2::before {
+    display: none;
+  }
+
+  @media (min-width: 1100px) {
+    h2 {
+      min-height: 44rem;
+    }
+  }
+
+  @media (max-width: 700px) {
+    h2 {
+      min-height: 32rem;
+      align-items: flex-end;
+      font-size: 2.25rem;
+      background:
+        linear-gradient(
+          0deg,
+          rgba(56, 50, 43, 0.88),
+          rgba(56, 50, 43, 0.08) 72%
+        ),
+        url("/setup-note/tree-99852_640-624x413.jpg") center / cover no-repeat;
+    }
+  }
+</style>

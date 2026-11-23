@@ -1,0 +1,226 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="受験物理SetUp LP｜Set Upノート"
+  description="11月までセンター模試40点だった人が、試験本番で100点を取り、早稲田大学に現役で合格できた受験物理の学習法。"
+  adsense={false}
+>
+  <article class="setup-note-lp">
+    <div class="lp-content">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>
+
+<style is:global>
+  .setup-note-lp {
+    --lp-ink: #403b35;
+    --lp-brown: #675d52;
+    --lp-accent: #8b463d;
+    --lp-sage: #e9efe2;
+    --lp-sage-deep: #ccd8c2;
+    --lp-paper: #faf8f2;
+    --lp-line: #d9d3c8;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 9rem;
+    background:
+      radial-gradient(
+        circle at 85% 5%,
+        rgba(202, 216, 194, 0.5),
+        transparent 25rem
+      ),
+      var(--lp-paper);
+    color: var(--lp-ink);
+    font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  }
+
+  .setup-note-lp::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.22;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+  }
+
+  .lp-content {
+    position: relative;
+    z-index: 1;
+    width: calc(100% - 4rem);
+    margin-inline: auto;
+    margin: auto;
+    font-size: 1.06rem;
+    line-height: 2.15;
+  }
+
+  .setup-note-lp .lp-section,
+  .setup-note-lp .section-inner {
+    position: relative;
+  }
+
+  h2 {
+    color: var(--lp-ink);
+    font-size: clamp(1.9rem, 3.8vw, 3.2rem);
+    line-height: 1.55;
+    letter-spacing: -0.035em;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .setup-note-lp .lp-content h3 {
+    margin: 4.5rem 0 1.5rem;
+    padding: 1.4rem 1.8rem 1.3rem;
+    border-top: 1px solid var(--lp-brown);
+    border-bottom: 1px solid var(--lp-brown);
+    color: var(--lp-ink);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.65;
+    text-align: center;
+  }
+
+  .setup-note-lp .lp-content p {
+    text-wrap: pretty;
+  }
+
+  .setup-note-lp .lp-content strong {
+    background: linear-gradient(transparent 64%, rgba(211, 193, 116, 0.38) 64%);
+    color: #302d29;
+    font-weight: 700;
+  }
+
+  .setup-note-lp .lp-content .lp-list {
+    padding: 2rem;
+    border: 0;
+    background: var(--lp-sage);
+    box-shadow: inset 0 0 0 1px rgba(103, 93, 82, 0.12);
+    list-style: none;
+  }
+
+  .setup-note-lp .lp-content .lp-list > li {
+    position: relative;
+    margin: 0;
+    padding: 0.7rem 0 0.7rem 2rem;
+    border-bottom: 1px solid rgba(103, 93, 82, 0.18);
+  }
+
+  .setup-note-lp .lp-content .lp-list > li:last-child {
+    border-bottom: 0;
+  }
+
+  .setup-note-lp .lp-content .lp-list > li::before {
+    content: "✓";
+    position: absolute;
+    top: 0.68rem;
+    left: 0.15rem;
+    color: var(--lp-accent);
+    font-family: "Noto Sans JP", "Yu Gothic", sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .setup-note-lp .lp-content .lp-list[data-bullet="question"] > li::before {
+    content: "?";
+    display: grid;
+    width: 1.25rem;
+    height: 1.25rem;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.76rem;
+    line-height: 1;
+  }
+
+  .setup-note-lp .lp-content img {
+    width: auto;
+    max-width: 100%;
+    max-height: 42rem;
+    margin: 0 auto;
+    object-fit: contain;
+  }
+
+  .setup-note-lp .lp-content p:has(> img) {
+    position: relative;
+    margin: 4.5rem calc(50% - 43vw);
+    padding: 1.25rem;
+    text-align: center;
+  }
+
+  .setup-note-lp .lp-content a {
+    color: var(--lp-accent);
+    font-weight: 700;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.3em;
+    transition: color 0.2s ease;
+  }
+
+  .setup-note-lp .lp-content a:hover {
+    color: var(--lp-brown);
+  }
+
+  body:has(.setup-note-lp) {
+    background: #faf8f2;
+  }
+
+  body:has(.setup-note-lp) .site-header {
+    border-bottom: 1px solid #d9d3c8;
+    background: rgba(250, 248, 242, 0.94);
+  }
+
+  body:has(.setup-note-lp) .site-header .nav {
+    font-family: "Noto Sans JP", "Yu Gothic", sans-serif;
+  }
+
+  body:has(.setup-note-lp) .site-footer {
+    margin-top: 0;
+    background: #403b35;
+  }
+
+  @media (max-width: 900px) {
+    body:has(.setup-note-lp) {
+      padding-top: 0;
+    }
+
+    body:has(.setup-note-lp) .site-header {
+      position: relative;
+      top: auto;
+      right: auto;
+      left: auto;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .setup-note-lp {
+      padding-bottom: 6rem;
+    }
+
+    .lp-content {
+      width: min(calc(100% - 2rem), 780px);
+      font-size: 1rem;
+      line-height: 2;
+    }
+
+    .setup-note-lp .lp-content h2 {
+      font-size: 1.75rem;
+    }
+
+    .setup-note-lp .lp-content h3 {
+      margin-top: 3.5rem;
+      padding-inline: 0.8rem;
+      font-size: 1.15rem;
+    }
+
+    .setup-note-lp .lp-content .lp-list {
+      margin-inline: -0.5rem;
+      padding: 2rem 1.2rem;
+    }
+
+    .setup-note-lp .lp-content p:has(> img) {
+      margin: 3.5rem -0.5rem;
+      padding: 0.6rem;
+    }
+  }
+</style>

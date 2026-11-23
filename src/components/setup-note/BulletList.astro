@@ -1,0 +1,12 @@
+---
+interface Props {
+  variant?: "check" | "question";
+  label?: string;
+}
+
+const { variant = "check", label } = Astro.props;
+---
+
+<ul class="lp-list" data-bullet={variant} aria-label={label}>
+  <slot />
+</ul>

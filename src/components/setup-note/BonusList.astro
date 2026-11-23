@@ -1,0 +1,153 @@
+---
+---
+
+<div class="bonus-list">
+  <article class="bonus-item">
+    <div class="bonus-copy">
+      <h3>
+        <span class="bonus-label">特典１</span>
+        <span>やっぱり文字だけは嫌だ！無料動画プレゼント！</span>
+      </h3>
+      <p>
+         pdfの教材に加え、内容を簡潔にまとめた、動画コンテンツをあなただけにプレゼントします。教材&#x26;動画のダブルパンチで深い理解をすることができます
+      </p>
+    </div>
+    <div class="bonus-media">
+      <img
+        src="/setup-note/bonus-video.png"
+        alt="宇宙映像を映すノートパソコン"
+        loading="lazy"
+      />
+    </div>
+  </article>
+
+  <article class="bonus-item">
+    <div class="bonus-copy">
+      <h3>
+        <span class="bonus-label">特典２</span>
+        <span>誰も知らない究極の問題解法をプレゼント！</span>
+      </h3>
+      <p>
+         99%の高校生が知らない究極の問題解法を特別に教えます。問題が解けるだけでなく、1つの問題で10の理解が生まれる最強の解法テクニックを教えます。
+      </p>
+    </div>
+    <div class="bonus-media">
+      <img
+        src="/setup-note/bonus-solution-method.png"
+        alt="黄金の鍵と物理学の古書"
+        loading="lazy"
+      />
+    </div>
+  </article>
+
+  <article class="bonus-item">
+    <div class="bonus-copy">
+      <h3>
+        <span class="bonus-label">特典３</span>
+        <span>一発理解！！公式テンプレート</span>
+      </h3>
+      <p>
+        公式を総まとめしたものをプレゼントします。無駄な説明を省き、公式・意味・適用方法が一目でわかる内容になっています。問題演習中や模試、入試の合間にパパっと確認したいときなどに使えます。
+      </p>
+    </div>
+    <div class="bonus-media">
+      <img
+        src="/setup-note/bonus-formula-sheet.png"
+        alt="物理公式チートシートと温かな学習机"
+        loading="lazy"
+      />
+    </div>
+  </article>
+</div>
+
+<style>
+  .bonus-item {
+    display: flex;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    margin-top: 5rem;
+    padding-block: 1.5rem;
+  }
+
+  .bonus-item:nth-child(even) {
+    flex-direction: row-reverse;
+  }
+
+  .bonus-copy,
+  .bonus-media {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .bonus-copy h3 {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin: 0 0 1.5rem;
+    text-align: left;
+  }
+
+  .bonus-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.25rem 0.85rem;
+    background: var(--lp-accent);
+    color: #fff;
+    font-family: "Noto Sans JP", "Yu Gothic", sans-serif;
+    font-size: 0.76rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .bonus-copy p {
+    margin: 0;
+  }
+
+  .bonus-media {
+    position: relative;
+  }
+
+  .bonus-media::before {
+    content: "";
+    position: absolute;
+    inset: 1.25rem -1.25rem -1.25rem 1.25rem;
+    z-index: -1;
+    background: var(--lp-sage-deep);
+  }
+
+  .bonus-item:nth-child(even) .bonus-media::before {
+    inset: 1.25rem 1.25rem -1.25rem -1.25rem;
+  }
+
+  .bonus-media img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: none;
+    object-fit: cover;
+    box-shadow: 0 1.5rem 3.5rem rgba(82, 72, 61, 0.16);
+  }
+
+  @media (max-width: 700px) {
+    .bonus-item,
+    .bonus-item:nth-child(even) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+
+    .bonus-copy h3 {
+      text-align: center;
+    }
+
+    .bonus-media::before,
+    .bonus-item:nth-child(even) .bonus-media::before {
+      inset: 0.8rem -0.5rem -0.8rem 0.5rem;
+    }
+  }
+</style>

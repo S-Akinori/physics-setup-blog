@@ -11,6 +11,7 @@ interface Props {
   image?: string;
   noindex?: boolean;
   analytics?: boolean;
+  adsense?: boolean;
   robots?: string | null;
 }
 
@@ -21,6 +22,7 @@ const {
   image,
   noindex = false,
   analytics = true,
+  adsense = true,
   robots = null,
 } = Astro.props;
 
@@ -35,6 +37,7 @@ const enableGa4 =
   import.meta.env.PROD &&
   /^G-[A-Z0-9]+$/i.test(ga4MeasurementId || "");
 const enableAdsense =
+  adsense &&
   analytics &&
   import.meta.env.PROD &&
   /^ca-pub-\d+$/i.test(adsenseClientId || "");

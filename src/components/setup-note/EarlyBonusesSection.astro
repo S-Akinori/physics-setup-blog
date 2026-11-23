@@ -1,0 +1,15 @@
+---
+import BonusList from "./BonusList.astro";
+
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-early-bonuses", sectionStyles.section]}
+  aria-label="これを見ているあなただけに特典があります"
+>
+  <div class="section-inner">
+    <h2>これを見ているあなただけに特典があります</h2>
+    <BonusList />
+  </div>
+</section>

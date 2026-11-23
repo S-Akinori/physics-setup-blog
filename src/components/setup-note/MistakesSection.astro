@@ -1,0 +1,195 @@
+---
+import sectionStyles from "./setupNoteSection.module.css";
+---
+
+<section
+  class:list={["lp-section", "lp-mistakes", sectionStyles.section]}
+  aria-label="こんなミスしたことありませんか"
+>
+  <div class="section-inner">
+    <h2>こんなミスしたことありませんか？</h2>
+    <div class="mistake-list">
+      <article class="mistake-note">
+        <h3 class="mistake-title">
+          <span class="check-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="m5 12.5 4.2 4.2L19 7" />
+            </svg>
+          </span>
+          よく符号ミスしませんか？
+        </h3>
+        <p>向きの正負が逆になってミスする。</p>
+        <p>→入試問題ではこういうミスが命取りになるんです。</p>
+      </article>
+
+      <article class="mistake-note">
+        <h3 class="mistake-title">
+          <span class="check-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="m5 12.5 4.2 4.2L19 7" />
+            </svg>
+          </span>
+          式をパターン化していませんか？
+        </h3>
+        <p>
+          ・「保存力のみが仕事をする」とき力学的保存則が成立する。それ以外は・・・
+        </p>
+        <p>・「鉛直投げ上げ」では-gに、「鉛直投げおろし」の時はgに、・・・</p>
+        <p>のように、公式を場合分けして覚えていませんか？</p>
+      </article>
+
+      <article class="mistake-note">
+        <h3 class="mistake-title">
+          <span class="check-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="m5 12.5 4.2 4.2L19 7" />
+            </svg>
+          </span>
+          「エネルギーと仕事の関係」本当に分かってますか？
+        </h3>
+        <p>
+          「運動エネルギーの変化量はされた仕事に等しい」←これを本当に理解していますか？
+        </p>
+      </article>
+
+      <article class="mistake-note">
+        <h3 class="mistake-title">
+          <span class="check-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="m5 12.5 4.2 4.2L19 7" />
+            </svg>
+          </span>
+          単振動の周期とかを公式だと思っていませんか？
+        </h3>
+        <p>
+          単振動に公式なんてありません！すべては運動方程式が理解できていれば暗記するものなんてないんですよ。
+        </p>
+      </article>
+    </div>
+
+    <p class="mistake-conclusion">
+      <strong>
+        これらはすべてインプット環境が悪く、誰も教えてくれないために起きてしまったことなのです。
+      </strong>
+    </p>
+  </div>
+</section>
+
+<style>
+  .lp-mistakes {
+    margin-block: 9rem;
+  }
+
+  .mistake-list {
+    display: grid;
+    gap: 2rem;
+    margin-top: 4rem;
+  }
+
+  .mistake-note {
+    position: relative;
+    overflow: hidden;
+    padding: 2rem 2.25rem 2rem 4.25rem;
+    border: 1px solid rgba(103, 93, 82, 0.2);
+    background-color: #fffef9;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2.62rem,
+      rgba(103, 135, 151, 0.2) 2.62rem,
+      rgba(103, 135, 151, 0.2) 2.7rem
+    );
+    box-shadow: 0 1.4rem 3.5rem rgba(82, 72, 61, 0.1);
+  }
+
+  .mistake-note::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 2.7rem;
+    width: 1px;
+    background: rgba(139, 70, 61, 0.36);
+  }
+
+  .lp-mistakes .mistake-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin: 0 0 1.15rem;
+    padding: 0;
+    border: 0;
+    color: var(--lp-ink);
+    font-size: clamp(1.1rem, 2vw, 1.32rem);
+    font-weight: 700;
+    line-height: 1.65;
+    text-align: left;
+  }
+
+  .check-icon {
+    display: grid;
+    flex: 0 0 1.65rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    margin-top: 0.16rem;
+    place-items: center;
+    border: 1px solid var(--lp-accent);
+    color: var(--lp-accent);
+  }
+
+  .check-icon svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+  }
+
+  .mistake-note p {
+    margin: 0;
+    line-height: 2.7rem;
+  }
+
+  .mistake-conclusion {
+    margin: 3.5rem auto 0;
+    padding-inline: 1rem;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    .lp-mistakes {
+      margin-block: 6.5rem;
+    }
+
+    .mistake-list {
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+
+    .mistake-note {
+      padding: 1.5rem 1.1rem 1.5rem 2.75rem;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 2.42rem,
+        rgba(103, 135, 151, 0.2) 2.42rem,
+        rgba(103, 135, 151, 0.2) 2.5rem
+      );
+    }
+
+    .mistake-note::before {
+      left: 1.75rem;
+    }
+
+    .lp-mistakes .mistake-title {
+      gap: 0.65rem;
+      font-size: 1.05rem;
+    }
+
+    .mistake-note p {
+      line-height: 2.5rem;
+    }
+  }
+</style>

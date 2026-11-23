@@ -1,12 +1,8 @@
 ---
 import CtaButton from "./CtaButton.astro";
-import sectionStyles from "./setupNoteSection.module.css";
 ---
 
-<section
-  class:list={["lp-section", "lp-pricing", sectionStyles.section]}
-  aria-label="気になるお値段は"
->
+<section class="lp-section lp-pricing" aria-label="気になるお値段は">
   <div class="section-inner">
     <h2>気になるお値段は？？</h2>
     <p>もちろん、お金はいただきます。</p>
@@ -17,7 +13,10 @@ import sectionStyles from "./setupNoteSection.module.css";
     <p>今回の教材はほんとにボリュームがあり、内容も濃いです。</p>
     <p>さらに8つの特典であなたを完全にフォローしていきます。</p>
     <p>これを完璧に使いこなせば、あなたは必ず成果をだせます。</p>
-    <p>なので<span style="font-size: 2rem;">14800円</span>で販売しようと思います。</p>
+    <p>
+      なので<span style="font-size: 2rem;">14800円</span>
+      で販売しようと思います。
+    </p>
     <h2>なるべく多くの人に夢をかなえてほしい</h2>
     <p>しかし、僕は思いました。</p>
     <p>
@@ -30,7 +29,9 @@ import sectionStyles from "./setupNoteSection.module.css";
     <p>そんなの僕だけで十分です。</p>
     <p>できれば、親に頼むことなく</p>
     <p>自分のお小遣いでも買えるような値段にしたいです。</p>
-    <p>なので、こちらの教材、<span style="font-size: 2rem;">14800円⇒9800円</span></p>
+    <p>
+      なので、こちらの教材、<span style="font-size: 2rem;">14800円⇒9800円</span>
+    </p>
     <p>という価格で</p>
     <p>お渡ししたいと思います。</p>
     <h2>後悔だけはしてほしくない</h2>
@@ -50,6 +51,7 @@ import sectionStyles from "./setupNoteSection.module.css";
       href="https://akiworking.stores.jp/items/690311b277e8d2377ac38254"
       label="Set Upノートを購入する"
     />
+  </div>
 </section>
 
 <style>

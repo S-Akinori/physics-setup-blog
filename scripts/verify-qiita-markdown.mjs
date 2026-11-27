@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { renderMarkdown } from "../src/lib/markdown.ts";
+import { getYouTubeVideoId } from "../src/lib/youtube.ts";
 
 const fixture = `
 ## Qiita互換
@@ -37,5 +38,29 @@ assert.match(code, /<table>/);
 assert.match(code, /contains-task-list/);
 assert.match(code, /data-footnotes/);
 assert.match(code, /data-language="mermaid"/);
+
+const youtubeId = "dQw4w9WgXcQ";
+for (const url of [
+  `https://www.youtube.com/watch?v=${youtubeId}`,
+  `https://youtu.be/${youtubeId}`,
+  `https://www.youtube.com/shorts/${youtubeId}`,
+  `https://www.youtube.com/live/${youtubeId}`,
+  `https://www.youtube-nocookie.com/embed/${youtubeId}`,
+]) {
+  assert.equal(getYouTubeVideoId(url), youtubeId);
+}
+assert.equal(
+  getYouTubeVideoId("https://example.com/watch?v=dQw4w9WgXcQ"),
+  null,
+);
+
+const youtube = await renderMarkdown(`https://youtu.be/${youtubeId}`);
+assert.match(youtube.code, /class="youtube-embed-placeholder"/);
+assert.match(youtube.code, new RegExp(`data-youtube-id="${youtubeId}"`));
+
+const inlineYoutube = await renderMarkdown(
+  `動画は https://youtu.be/${youtubeId} から視聴できます。`,
+);
+assert.doesNotMatch(inlineYoutube.code, /youtube-embed-placeholder/);
 
 console.log("Qiita-compatible Markdown rendering verified.");

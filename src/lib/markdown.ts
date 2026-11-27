@@ -6,6 +6,7 @@ import {
   normalizeQiitaMarkdown,
   remarkQiitaCodeBlocks,
   remarkQiitaNotes,
+  remarkYouTubeEmbeds,
 } from "./qiita-markdown.ts";
 
 const processor = await createMarkdownProcessor({
@@ -14,6 +15,7 @@ const processor = await createMarkdownProcessor({
     remarkMath,
     remarkQiitaNotes,
     remarkQiitaCodeBlocks,
+    remarkYouTubeEmbeds,
   ],
   rehypePlugins: [rehypeKatex],
   syntaxHighlight: "shiki",

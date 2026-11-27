@@ -3,6 +3,7 @@ import { Marked } from "marked";
 import markedFootnote from "marked-footnote";
 import markedKatex from "marked-katex-extension";
 import { normalizeQiitaMarkdown } from "./qiita-markdown";
+import { createYouTubeEmbed, getYouTubeVideoId } from "./youtube";
 
 const markdown = new Marked().use(
   { gfm: true },
@@ -35,6 +36,29 @@ function prepareQiitaMarkup(container: HTMLElement) {
     if (language.toLowerCase() === "mermaid") {
       code.parentElement?.setAttribute("data-mermaid", "true");
     }
+  });
+}
+
+function renderYouTubeEmbeds(container: HTMLElement) {
+  container
+    .querySelectorAll<HTMLElement>(
+      ".youtube-embed-placeholder[data-youtube-id]",
+    )
+    .forEach((placeholder) => {
+      const id = placeholder.dataset.youtubeId;
+      if (id) placeholder.replaceWith(createYouTubeEmbed(id));
+    });
+
+  container.querySelectorAll("p").forEach((paragraph) => {
+    if (paragraph.children.length !== 1) return;
+    const link = paragraph.firstElementChild;
+    if (
+      !(link instanceof HTMLAnchorElement) ||
+      paragraph.textContent !== link.textContent
+    )
+      return;
+    const id = getYouTubeVideoId(link.href);
+    if (id) paragraph.replaceWith(createYouTubeEmbed(id));
   });
 }
 
@@ -73,6 +97,7 @@ async function renderMermaidBlocks(container: HTMLElement) {
 
 export async function enhanceRenderedMarkdown(container: HTMLElement) {
   prepareQiitaMarkup(container);
+  renderYouTubeEmbeds(container);
   await renderMermaidBlocks(container);
 }
 

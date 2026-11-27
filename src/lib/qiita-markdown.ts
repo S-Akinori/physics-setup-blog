@@ -1,12 +1,15 @@
 type MarkdownNode = {
   type?: string;
   value?: string;
+  url?: string;
   lang?: string | null;
   children?: MarkdownNode[];
   data?: {
     hProperties?: Record<string, unknown>;
   };
 };
+
+import { getYouTubeVideoId } from "./youtube.ts";
 
 const noteMarker = /^\[!QIITA-NOTE:(info|warn|alert)\]$/;
 type NoteKind = "info" | "warn" | "alert";
@@ -107,5 +110,25 @@ export function remarkQiitaCodeBlocks() {
     };
 
     transform(tree);
+  };
+}
+
+/** 単独行のYouTube URLを、クライアント側で安全に埋め込むための要素へ変換する。 */
+export function remarkYouTubeEmbeds() {
+  return (tree: MarkdownNode) => {
+    walk(tree, (node) => {
+      if (node.type !== "paragraph" || node.children?.length !== 1) return;
+      const child = node.children[0];
+      const source = child.type === "link" ? child.url : child.value;
+      if (!source) return;
+      const videoId = getYouTubeVideoId(source.trim());
+      if (!videoId) return;
+
+      node.data = node.data || {};
+      node.data.hProperties = {
+        className: ["youtube-embed-placeholder"],
+        dataYoutubeId: videoId,
+      };
+    });
   };
 }
